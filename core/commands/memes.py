@@ -1,3 +1,8 @@
+"""
+A cog full of memes.
+
+Ported from PingBot to PingBot2 by aidybee.
+"""
 import discord
 from discord.ext import commands
 import random
