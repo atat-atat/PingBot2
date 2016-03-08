@@ -9,7 +9,7 @@ with(open("bot.info")) as botConfF:
 
 bot = discord.Client()
 description = '''A discord bot built using Python (discord.py)'''
-bot = commands.Bot(command_prefix='?', description=description)
+bot = commands.Bot(command_prefix='!', description=description)
 
 command_sets = ["core.commands.search_cmd","core.commands.memes"] #command sets to load
 last_loaded = []
