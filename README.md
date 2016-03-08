@@ -11,6 +11,7 @@ To run PingBot, create a bot.info file, and inside it, type -
 ```
 
 You will also need the requiring modules, of course.
+
 To get a user to join a channel, send the bot the Discord invite link.
 
 ##Requirements
