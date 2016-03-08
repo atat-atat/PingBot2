@@ -16,4 +16,5 @@ You will also need the requiring modules, of course.
 
 - Python 3.5+
 - discord.py
+- BeautifulSoup
 - wikipedia
