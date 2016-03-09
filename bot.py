@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 from core.colors import colors
 import os
-import wikipedia
+import logging
 
 with(open("bot.info")) as botConfF:
 	botConfig = botConfF.read().split(":")
@@ -17,6 +17,14 @@ admins = [] #who can use the SPECIAL commands
 
 title = "PingBot" #Command prompt window caption
 os.system("title "+title)
+
+#-----------------------------
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 #-----------------------------
 
