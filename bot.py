@@ -4,19 +4,27 @@ from core.colors import colors
 import os
 import logging
 from PIL import Image, ImageFont, ImageDraw
+import asyncio
+import random
 
 with(open("bot.info")) as botConfF:
 	botConfig = botConfF.read().split(":")
 
 bot = discord.Client()
 description = '''A discord bot built using Python (discord.py)'''
-bot = commands.Bot(command_prefix='!', description=description)
+bot = commands.Bot(command_prefix='!', description=description, pm_help=True)
 
-command_sets = ["core.commands.search_cmd","core.commands.memes", "core.commands.commands"] #command sets to load
-last_loaded = []
+last_loaded = [] #last loaded cog
+info_dir = "./core/config"
 
-with open('admins.info', 'r') as admins_file:
+with open(os.path.join(info_dir, 'admins.info'), 'r') as admins_file:
 	admins = admins_file.read().split(',')
+
+with open(os.path.join(info_dir, 'no_delete.info'), 'r') as nd_file:
+	no_delete = nd_file.read().split(',')
+
+with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
+	command_sets = cs_file.read().split(',')
 
 title = "PingBot2" #Command prompt window caption
 os.system("title "+title)
@@ -33,10 +41,10 @@ logger.addHandler(handler)
 #-----------------------------
 
 #Extension load commands
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def load(ctx, extension_name : str):
+	"""Loads an extension."""
 	if is_dev(ctx) == True:
-		"""Loads an extension."""
 		try:
 			bot.load_extension(extension_name)
 			last_loaded.append(extension_name)
@@ -48,10 +56,10 @@ async def load(ctx, extension_name : str):
 	else:
 		await bot.say("You do not have permission to use this command!")
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def unload(ctx, extension_name : str):
+	"""Unloads an extension."""
 	if is_dev(ctx) == True:
-	    """Unloads an extension."""
 	    if extension_name in last_loaded:
 	    	last_loaded.remove(extension_name)
 	    bot.unload_extension(extension_name)
@@ -59,8 +67,9 @@ async def unload(ctx, extension_name : str):
 	else:
 		await bot.say("You don't have permission to use that command!")
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def reload(ctx):
+	"""Reloads all loaded extensions"""
 	if is_dev(ctx) == True:
 		reset(ctx)
 		if reset(ctx) == True:
@@ -68,8 +77,9 @@ async def reload(ctx):
 		else:
 			await bot.say("Failed to reload!")
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def show_cogs(ctx):
+	"""Shows a list of loaded cogs."""
 	if is_dev(ctx) == True:
 		await bot.say("Default command sets:")
 		for i in command_sets:
@@ -77,16 +87,6 @@ async def show_cogs(ctx):
 		await bot.say("Recently loaded sets:")
 		for i in last_loaded:
 			await bot.say(i)
-
-#owner check test
-@bot.command(pass_context = True)
-async def check_owner(ctx):
-	if is_owner(ctx) == True:
-		await bot.say("You are the owner!")
-	elif is_owner(ctx) == False:
-		await bot.say("You are not the owner!")
-	elif is_owner(ctx) == "PRIV":
-		await bot.say("This is a private channel!")
 
 #-----------------------------
 #Bot events
@@ -106,6 +106,11 @@ async def on_ready():
 		print("	{} : {}".format(server.name,server.id))
 	for extension_name in command_sets: #load default extensions
 		bot.load_extension(extension_name)
+
+	sub_dir = "./core/docs/list"
+	with open(os.path.join(sub_dir, "games.list"), 'r') as games_file:
+			games = games_file.read().split(',')
+	await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 
 	print(" ")
 
@@ -136,7 +141,6 @@ async def on_message(msg):
 			except IndexError:
 				await bot.send_typing(msg.channel)
 				await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
-
 
 	#message the user if the user mentioned is offline
 	if len(msg.mentions) > 0:
@@ -179,6 +183,11 @@ async def on_member_join(member):
 	await bot.send_typing(server)
 	await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
 
+@bot.event
+async def on_message_delete(msg):
+	if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
+		await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
+
 #-----------------------------
 #Other bot functions
 
@@ -213,4 +222,25 @@ def reset(ctx):
 	else:
 		return False
 
-bot.run(botConfig[0], botConfig[1])
+#random game loop
+async def random_game():
+	await bot.wait_until_ready()
+	while not bot.is_closed:
+		sub_dir = "./core/docs/list"
+		with open(os.path.join(sub_dir, "games.list"), 'r') as games_file:
+			games = games_file.read().split(',')
+		await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
+		await asyncio.sleep(100)
+
+#random messages loop (Disabled for now.)
+loop = asyncio.get_event_loop()
+
+try:
+    loop.create_task(random_game())
+    #loop.create_task(command_input())
+    loop.run_until_complete(bot.login(botConfig[0], botConfig[1]))
+    loop.run_until_complete(bot.connect())
+except Exception:
+    loop.run_until_complete(bot.close())
+finally:
+   loop.close()
