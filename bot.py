@@ -137,6 +137,7 @@ async def on_message(msg):
 				await bot.send_typing(msg.channel)
 				await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
 
+
 	#message the user if the user mentioned is offline
 	if len(msg.mentions) > 0:
 		for user in msg.mentions:

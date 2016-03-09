@@ -1,0 +1,1 @@
+Type !help for a list of commands, and type !info for the server information.
