@@ -3,3 +3,4 @@ wikipedia
 urllib
 BeautifulSoup
 cleverbot
+Pillow

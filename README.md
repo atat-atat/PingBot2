@@ -21,3 +21,4 @@ To get a user to join a channel, send the bot the Discord invite link.
 - BeautifulSoup
 - wikipedia
 - cleverbot
+- Pillow
