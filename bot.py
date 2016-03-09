@@ -28,6 +28,9 @@ with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
 with open(os.path.join(info_dir, "bot.info"), 'r') as botConfF:
 	botConfig = botConfF.read().split(":")
 
+with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
+	no_welcome = nw_file.read().split(":")
+
 title = "PingBot2" #Command prompt window caption
 os.system("title "+title)
 
@@ -172,18 +175,19 @@ async def on_message(msg):
 #welcome message
 @bot.event
 async def on_member_join(member):
-	server_id = member.server.id
-	server = member.server
-	sub_dir = "./core/docs/welcome"
-	try:
-		with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
-			welcome = welcome_file.read()
-	except FileNotFoundError:
-		with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
-			welcome = welcome_file.read()
-	#fmt = 'Welcome {0.mention} to {1.name}!\r\n{2.welcome}'
-	await bot.send_typing(server)
-	await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
+	if member.server.id not in no_welcome:
+		server_id = member.server.id
+		server = member.server
+		sub_dir = "./core/docs/welcome"
+		try:
+			with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
+				welcome = welcome_file.read()
+		except FileNotFoundError:
+			with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
+				welcome = welcome_file.read()
+		#fmt = 'Welcome {0.mention} to {1.name}!\r\n{2.welcome}'
+		await bot.send_typing(server)
+		await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
 
 @bot.event
 async def on_message_delete(msg):
