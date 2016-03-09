@@ -14,7 +14,7 @@ PingBot is still in development!
 
 To run PingBot, simply execute bot.py.
 
-To get PingBot to join a server, simply send PingBot the Discord invite link via PM.
+To get PingBot to join a server, type `!join <invite_link>`
 
 Be sure to edit the `bot.info` file located in `\core\config\`, as well as any other files located in there.
 

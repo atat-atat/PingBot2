@@ -121,10 +121,9 @@ async def on_ready():
 
 @bot.event
 async def on_message(msg):
-	if msg.channel.is_private and msg.content.startswith('http') and msg.author != bot.user:
-		invite = await bot.get_invite(msg.content)
+	if msg.content.startswith("!join"):
+		invite = msg.content[len("!join "):].strip()
 		await bot.accept_invite(invite)
-		await bot.send_message(msg.author, "Joining server.")
 
 	#leave the server
 	if msg.content.startswith("!leave"):
