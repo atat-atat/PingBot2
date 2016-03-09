@@ -7,8 +7,7 @@ from PIL import Image, ImageFont, ImageDraw
 import asyncio
 import random
 
-with(open("bot.info")) as botConfF:
-	botConfig = botConfF.read().split(":")
+
 
 bot = discord.Client()
 description = '''A discord bot built using Python (discord.py)'''
@@ -25,6 +24,9 @@ with open(os.path.join(info_dir, 'no_delete.info'), 'r') as nd_file:
 
 with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
 	command_sets = cs_file.read().split(',')
+
+with open(os.path.join(info_dir, "bot.info"), 'r') as botConfF:
+	botConfig = botConfF.read().split(":")
 
 title = "PingBot2" #Command prompt window caption
 os.system("title "+title)
