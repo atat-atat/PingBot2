@@ -130,6 +130,7 @@ class Commands():
     async def clever(self, *, input_string : str):
         await self.bot.say(">>> {}".format(input_string))
         response = cb1.ask(input_string)
+        await self.bot.type()
         await self.bot.say(response)
 
 

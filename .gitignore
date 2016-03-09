@@ -3,5 +3,6 @@ core/pingbot.py
 core/config.py
 core/__pycache__
 core/commands/__pycache__
+core/images/rip-radioedit.jpg
 bot.info
 bot.bat

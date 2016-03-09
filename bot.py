@@ -3,6 +3,7 @@ import discord
 from core.colors import colors
 import os
 import logging
+from PIL import Image, ImageFont, ImageDraw
 
 with(open("bot.info")) as botConfF:
 	botConfig = botConfF.read().split(":")
@@ -13,13 +14,16 @@ bot = commands.Bot(command_prefix='!', description=description)
 
 command_sets = ["core.commands.search_cmd","core.commands.memes"] #command sets to load
 last_loaded = []
-admins = [] #who can use the SPECIAL commands
 
-title = "PingBot" #Command prompt window caption
+with open('admins.info', 'r') as admins_file:
+	admins = admins_file.read().split(',')
+
+title = "PingBot2" #Command prompt window caption
 os.system("title "+title)
 
 #-----------------------------
 
+#Logging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
@@ -116,6 +120,21 @@ async def on_message(msg):
 		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
 			await bot.leave_server(msg.server)
 
+	if msg.content.startswith("!rip"):
+			try:
+				name = msg.content[len("!rip "):].strip()
+				img = Image.open("./core/images/rip.jpg")
+				draw = ImageDraw.Draw(img)
+					# font = ImageFont.truetype(<font-file>, <font-size>)
+				font = ImageFont.truetype("comic.ttf", 28)
+					# draw.text((x, y),"Sample Text",(r,g,b))
+				draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
+				img.save('./core/images/rip-radioedit.jpg')
+				await bot.send_file(msg.channel, "./core/images/rip-radioedit.jpg")
+			except IndexError:
+				await bot.send_typing(msg.channel)
+				await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
+
 	await bot.process_commands(msg)
 	print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
 
@@ -127,6 +146,7 @@ def is_dev(ctx):
 	if ctx.message.author.id in admins:
 		return True
 	else:
+		print(colors.cred+"USER ATTEMPTED UNAUTHORIZED DEV COMMAND!"+colors.cwhite)
 		return False
 
 #returns a boolean depending on if the message author is an owner
