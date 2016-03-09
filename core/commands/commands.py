@@ -61,5 +61,9 @@ class Commands():
         except discord.errors.Forbidden:
             await self.bot.say("Failed to kick user!\r\nThe bot does not have the appropriate permission to kick users!")
 
+    @commands.command(help_attrs="Prefix test")
+    async def command_prefix_test(self):
+        await self.bot.say("Prefix is: {}\r\nHelp: {}" .format(self.bot.command_prefix, self.bot.help_attrs))
+
 def setup(bot):
     bot.add_cog(Commands(bot))

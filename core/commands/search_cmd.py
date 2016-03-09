@@ -40,23 +40,20 @@ class Commands():
         """
 
     @commands.command()
-    async def google(self, *, search_string : str): #!google command that utilizes the search module.
+    async def google(self, *, search_string : str):
         query = urllib.parse.urlencode({'q': search_string})
         url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
         search_response = urllib.request.urlopen(url)
         search_results = search_response.read().decode("utf8")
         results = json.loads(search_results)
         data = results['responseData']
-        #print('Total results: %s' % data['cursor']['estimatedResultCount'])
         hits = data['results']
-        #print('Top %d hits:' % len(hits))
-                #len(hits) = 1
         for h in hits:
             h = h['url']
         await self.bot.say(h)
 
     @commands.command()
-    async def image(self, *, search_string : str): #!google command that utilizes the search module.
+    async def image(self, *, search_string : str):
         h=""
         query = urllib.parse.urlencode({'q': search_string})
         url = 'https://www.google.com/images?source=hp&q=%s' % query
@@ -64,10 +61,7 @@ class Commands():
         search_results = search_response.read().decode("utf8")
         results = json.loads(search_results)
         data = results['responseData']
-        #print('Total results: %s' % data['cursor']['estimatedResultCount'])
         hits = data['results']
-        #print('Top %d hits:' % len(hits))
-                #len(hits) = 1
         for h in hits:
             h = h['url']
         await self.bot.say(h)
