@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 import random
 import os
+from PIL import Image, ImageFont, ImageDraw
 
 class memes():
     def __init__(self, bot):
