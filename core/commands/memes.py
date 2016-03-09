@@ -359,19 +359,15 @@ class memes():
 #Special Commands
 #Special Commands
     @commands.command()
-    async def rip(self):
-        try:
-            name = msg.content[len("!rip "):].strip()
+    async def rip(self, *, rip_text : str):
             img = Image.open("rip.jpg")
-            draw = ImageDraw.Draw(img)
+            draw = ImageDraw.Draw(rip_text)
                 # font = ImageFont.truetype(<font-file>, <font-size>)
             font = ImageFont.truetype("comic.ttf", 28)
                 # draw.text((x, y),"Sample Text",(r,g,b))
             draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
             img.save('rip-radioedit.jpg')
             await self.bot.say(msg.channel, "rip-radioedit.jpg")
-        except IndexError:
-            await self.bot.say(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
     
 
 
