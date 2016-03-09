@@ -12,7 +12,7 @@ bot = discord.Client()
 description = '''A discord bot built using Python (discord.py)'''
 bot = commands.Bot(command_prefix='!', description=description)
 
-command_sets = ["core.commands.search_cmd","core.commands.memes"] #command sets to load
+command_sets = ["core.commands.search_cmd","core.commands.memes", "core.commands.commands"] #command sets to load
 last_loaded = []
 
 with open('admins.info', 'r') as admins_file:
@@ -116,10 +116,12 @@ async def on_message(msg):
 		await bot.accept_invite(invite)
 		await bot.send_message(msg.author, "Joining server.")
 
+	#leave the server
 	if msg.content.startswith("!leave"):
 		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
 			await bot.leave_server(msg.server)
 
+	#rip message
 	if msg.content.startswith("!rip"):
 			try:
 				name = msg.content[len("!rip "):].strip()
@@ -135,8 +137,46 @@ async def on_message(msg):
 				await bot.send_typing(msg.channel)
 				await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
 
+	#message the user if the user mentioned is offline
+	if len(msg.mentions) > 0:
+		for user in msg.mentions:
+			if user.status == user.status.offline:
+				server = msg.server
+				channel = msg.channel
+				await bot.send_typing(msg.channel)
+				await bot.send_message(msg.channel, "`{}` is currently offline!\r\nYour message has been sent via PM.".format(user.name))
+				await bot.send_typing(user)
+				await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\r\n\r\n{}".format(msg.author.name, server, channel, msg.content))
+
+	#edit the welcome message of a server.
+	if msg.content.startswith('!welcome_edit'):
+		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
+			servw = msg.content[len("!welcome_edit "):].strip()
+			sub_dir = "./core/docs/welcome"
+			with open(os.path.join(sub_dir, msg.server.id+".txt"), 'w') as welcome_file:
+				welcome_file.write(servw)
+			await bot.send_message(msg.channel, "Successfully modified server welcome message!")
+		else:
+			await bot.send_message(msg.channel, "You do not have the permission to modify the server welcome message.")
+
 	await bot.process_commands(msg)
 	print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
+
+#welcome message
+@bot.event
+async def on_member_join(member):
+	server_id = member.server.id
+	server = member.server
+	sub_dir = "./core/docs/welcome"
+	try:
+		with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
+			welcome = welcome_file.read()
+	except FileNotFoundError:
+		with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
+			welcome = welcome_file.read()
+	#fmt = 'Welcome {0.mention} to {1.name}!\r\n{2.welcome}'
+	await bot.send_typing(server)
+	await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
 
 #-----------------------------
 #Other bot functions
