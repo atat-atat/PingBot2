@@ -1,13 +1,13 @@
 from discord.ext import commands
-import discord
 from core.colors import colors
-import os
-import logging
+from core.sysnotify import WindowNotify
 from PIL import Image, ImageFont, ImageDraw
 import asyncio
 import random
-
-
+import os
+import logging
+import discord
+import configparser
 
 bot = discord.Client()
 description = '''A discord bot built using Python (discord.py)'''
@@ -25,8 +25,10 @@ with open(os.path.join(info_dir, 'no_delete.info'), 'r') as nd_file:
 with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
 	command_sets = cs_file.read().split(',')
 
-with open(os.path.join(info_dir, "bot.info"), 'r') as botConfF:
-	botConfig = botConfF.read().split(":")
+config = configparser.SafeConfigParser()
+config.read("./core/config/bot.info")
+email = config.get('config', 'email')
+password = config.get('config', 'password')
 
 with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
 	no_welcome = nw_file.read().split(":")
@@ -96,10 +98,6 @@ async def show_cogs(ctx):
 #-----------------------------
 #Bot events
 
-#@bot.command()
-#async def command_name():
-	#await bot.say("Test.")
-
 #display information when the bot is ready.
 @bot.event
 async def on_ready():
@@ -116,6 +114,8 @@ async def on_ready():
 	with open(os.path.join(sub_dir, "games.list"), 'r') as games_file:
 			games = games_file.read().split(',')
 	await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
+
+	WindowNotify.balloon_tip(title, "Bot started successfully!")
 
 	print(" ")
 
@@ -227,6 +227,10 @@ def reset(ctx):
 	else:
 		return False
 
+def icon():
+	root = Tk()
+	root.iconbitmap(r'./core/images/icon.ico')
+
 #random game loop
 async def random_game():
 	await bot.wait_until_ready()
@@ -241,11 +245,16 @@ async def random_game():
 loop = asyncio.get_event_loop()
 
 try:
-    loop.create_task(random_game())
-    #loop.create_task(command_input())
-    loop.run_until_complete(bot.login(botConfig[0], botConfig[1]))
-    loop.run_until_complete(bot.connect())
+	loop.create_task(random_game())
+	try:
+		loop.run_until_complete(bot.login(email, password))
+		loop.run_until_complete(bot.connect())
+	except discord.errors.LoginFailure:
+		print(colors.cred+"ERROR! Failed to login!")
+		print("The information you set in bot.info is wrong."+colors.cwhite)
+		WindowNotify.balloon_tip(title, "Failed to login! (Check console.)")
 except Exception:
-    loop.run_until_complete(bot.close())
+	WindowNotify.balloon_tip(title, "Something went wrong!")
+	loop.run_until_complete(bot.close())
 finally:
-   loop.close()
+	loop.close()
