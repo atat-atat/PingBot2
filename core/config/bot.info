@@ -1,3 +1,10 @@
 [config]
+#Login stuff
 email=Email
 password=Password
+#Command prefix
+prefix=!
+#Bot description
+description=I am a robot!
+#Whether the bot should PM the commands list. (recommended)
+pm_help=True
