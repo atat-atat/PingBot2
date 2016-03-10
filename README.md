@@ -21,12 +21,19 @@ Be sure to edit the `bot.info` file located in `\core\config\`, as well as any o
 Below is a list of config files and what they do...
 
 ##bot.info File
-This file holds the login information for PingBot.
+This file holds most of PingBot's configurations.
 
 ```
 [config]
+#Login stuff
 email=Email
 password=Password
+#Command prefix
+prefix=!
+#Bot description
+description=A real living, breathing, robot.
+#Whether the bot should PM the commands list. (recommended)
+pm_help=True
 ```
 
 ##command_sets.info File
