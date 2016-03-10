@@ -14,33 +14,9 @@ class Commands():
     def __init__(self, bot):
         self.bot = bot
 
-    """
-    #Search function
-    def search(prompt, search_string):
-        
-        
-        Known supported prompts -
-        Google : http://ajax.googleapis.com/ajax/services/search/web?v=1.0&
-        YouTube : https://ajax.googleapis.com/ajax/services/search/video?v=1.0&
-    
-        query = urllib.parse.urlencode({'q': search_string})
-        url = ''+prompt+'%s' % query
-        search_response = urllib.request.urlopen(url)
-        search_results = search_response.read().decode("utf8")
-        results = json.loads(search_results)
-        data = results['responseData']
-        #print('Total results: %s' % data['cursor']['estimatedResultCount'])
-        hits = data['results']
-        #print('Top %d hits:' % len(hits))
-                #len(hits) = 1
-        for h in hits:
-            h = h['url']
-
-        await self.bot.say(h)
-        """
-
     @commands.command()
     async def google(self, *, search_string : str):
+        """Searches Google."""
         query = urllib.parse.urlencode({'q': search_string})
         url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
         search_response = urllib.request.urlopen(url)
@@ -53,22 +29,8 @@ class Commands():
         await self.bot.say(h)
 
     @commands.command()
-    async def image(self, *, search_string : str):
-        h=""
-        query = urllib.parse.urlencode({'q': search_string})
-        url = 'https://www.google.com/images?source=hp&q=%s' % query
-        search_response = urllib.request.urlopen(url)
-        search_results = search_response.read().decode("utf8")
-        results = json.loads(search_results)
-        data = results['responseData']
-        hits = data['results']
-        for h in hits:
-            h = h['url']
-        await self.bot.say(h)
-        #await self.bot.say(search.h)
-
-    @commands.command()
     async def youtube(self, *, search_string : str):
+        """Searches YouTube."""
         h=""
         query = urllib.parse.urlencode({'q': search_string})
         url = 'https://ajax.googleapis.com/ajax/services/search/video?v=1.0&%s' % query
@@ -86,6 +48,7 @@ class Commands():
 
     @commands.command()
     async def urban(self, *, search_string : str):
+        """Searches Urban Dictionary."""
         try:
             await self.bot.say("Showing definition of {} from Urban Dictionary.".format(search_string))
             r = requests.get("http://www.urbandictionary.com/define.php?term={}".format(search_string))
@@ -100,6 +63,7 @@ class Commands():
 
     @commands.command()
     async def define(self, *, search_string : str):
+        """Defines a word."""
         try:
             await self.bot.say("Showing definition of {} from Dictionary.com".format(search_string))
             r = requests.get("http://dictionary.reference.com/browse/{}?s=t".format(search_string))
@@ -114,6 +78,7 @@ class Commands():
 
     @commands.command()
     async def wiki(self, *, search_string : str):
+        """Searches Wikipedia."""
         try:
             result = wikipedia.summary(search_string, sentences = 5)
             await self.bot.say(result)
@@ -122,11 +87,11 @@ class Commands():
 
     @commands.command()
     async def clever(self, *, input_string : str):
+        """Talks to cleverbot."""
         await self.bot.say(">>> {}".format(input_string))
         response = cb1.ask(input_string)
         await self.bot.type()
         await self.bot.say(response)
-
 
 def setup(bot):
     bot.add_cog(Commands(bot))
