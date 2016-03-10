@@ -1,1 +1,3 @@
-Email:Password
+[config]
+email=Email
+password=Password
