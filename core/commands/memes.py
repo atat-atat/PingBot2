@@ -274,7 +274,7 @@ class memes():
             config['commands'][name] = value
             with open('commands.ini', 'w') as configfile:
                 config.write(configfile)
-            with open('commands.txt', 'a') as notes_file:
+            with open(os.path.join(self.sub_dir,'commands.txt'), 'a') as notes_file:
                 notes_file.write(name+",")
             await self.bot.type()
             await self.bot.say("Successfully created note!")
@@ -287,7 +287,7 @@ class memes():
             await self.bot.type()
             await self.bot.say("Successfully edited note!")
         elif option == "list":
-            with open('commands.txt','r') as notes_file:
+            with open(os.path.join(self.sub_dir,'commands.txt'),'r') as notes_file:
                 notes = notes_file.read()
             await self.bot.type()
             await self.bot.say("Notes: `{}`".format(notes))
