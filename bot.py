@@ -10,8 +10,13 @@ import discord
 import configparser
 
 bot = discord.Client()
-description = '''A discord bot built using Python (discord.py)'''
-bot = commands.Bot(command_prefix='!', description=description, pm_help=True)
+
+config = configparser.ConfigParser()
+config.read('./core/config/bot.info')
+cmd_prefix = config.get("config","prefix",fallback="!")
+description = config.get("config", "description", fallback="A discord bot built using Python (discord.py)")
+pm_help = config.get("config", "pm_help", fallback=True)
+bot = commands.Bot(command_prefix=cmd_prefix, description=description, pm_help=pm_help)
 
 last_loaded = [] #last loaded cog
 info_dir = "./core/config"
@@ -33,8 +38,7 @@ password = config.get('config', 'password')
 with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
 	no_welcome = nw_file.read().split(":")
 
-title = "PingBot2" #Command prompt window caption
-os.system("title "+title)
+os.system("title PingBot2")
 
 #-----------------------------
 
@@ -46,7 +50,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 #-----------------------------
-
 #Extension load commands
 @bot.command(pass_context=True, hidden=True)
 async def load(ctx, extension_name : str):
@@ -67,10 +70,10 @@ async def load(ctx, extension_name : str):
 async def unload(ctx, extension_name : str):
 	"""Unloads an extension."""
 	if is_dev(ctx) == True:
-	    if extension_name in last_loaded:
-	    	last_loaded.remove(extension_name)
-	    bot.unload_extension(extension_name)
-	    await bot.say("Successfully unloaded `{}`.".format(extension_name))
+		if extension_name in last_loaded:
+		    last_loaded.remove(extension_name)
+		bot.unload_extension(extension_name)
+		await bot.say("Successfully unloaded `{}`.".format(extension_name))
 	else:
 		await bot.say("You don't have permission to use that command!")
 
@@ -115,7 +118,12 @@ async def on_ready():
 			games = games_file.read().split(',')
 	await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 
+	title = bot.user.name #Set command prompt window caption to bot name
+
 	WindowNotify.balloon_tip(title, "Bot started successfully!")
+
+	
+	os.system("title "+title+"(PingBot2)")
 
 	print(" ")
 
@@ -132,19 +140,19 @@ async def on_message(msg):
 
 	#rip message
 	if msg.content.startswith("!rip"):
-			try:
-				name = msg.content[len("!rip "):].strip()
-				img = Image.open("./core/images/rip.jpg")
-				draw = ImageDraw.Draw(img)
-					# font = ImageFont.truetype(<font-file>, <font-size>)
-				font = ImageFont.truetype("comic.ttf", 28)
-					# draw.text((x, y),"Sample Text",(r,g,b))
-				draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
-				img.save('./core/images/rip-radioedit.jpg')
-				await bot.send_file(msg.channel, "./core/images/rip-radioedit.jpg")
-			except IndexError:
-				await bot.send_typing(msg.channel)
-				await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
+		try:
+			name = msg.content[len("!rip "):].strip()
+			img = Image.open("./core/images/rip.jpg")
+			draw = ImageDraw.Draw(img)
+				# font = ImageFont.truetype(<font-file>, <font-size>)
+			font = ImageFont.truetype("comic.ttf", 28)
+				# draw.text((x, y),"Sample Text",(r,g,b))
+			draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
+			img.save('./core/images/rip-radioedit.jpg')
+			await bot.send_file(msg.channel, "./core/images/rip-radioedit.jpg")
+		except IndexError:
+			await bot.send_typing(msg.channel)
+			await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
 
 	#message the user if the user mentioned is offline
 	if len(msg.mentions) > 0:
@@ -184,7 +192,6 @@ async def on_member_join(member):
 		except FileNotFoundError:
 			with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
 				welcome = welcome_file.read()
-		#fmt = 'Welcome {0.mention} to {1.name}!\r\n{2.welcome}'
 		await bot.send_typing(server)
 		await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
 
@@ -192,6 +199,7 @@ async def on_member_join(member):
 async def on_message_delete(msg):
 	if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
 		await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
+
 
 #-----------------------------
 #Other bot functions
@@ -227,10 +235,6 @@ def reset(ctx):
 	else:
 		return False
 
-def icon():
-	root = Tk()
-	root.iconbitmap(r'./core/images/icon.ico')
-
 #random game loop
 async def random_game():
 	await bot.wait_until_ready()
@@ -253,6 +257,7 @@ try:
 		print(colors.cred+"ERROR! Failed to login!")
 		print("The information you set in bot.info is wrong."+colors.cwhite)
 		WindowNotify.balloon_tip(title, "Failed to login! (Check console.)")
+	
 except Exception:
 	WindowNotify.balloon_tip(title, "Something went wrong!")
 	loop.run_until_complete(bot.close())
