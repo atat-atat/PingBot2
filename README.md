@@ -24,7 +24,9 @@ Below is a list of config files and what they do...
 This file holds the login information for PingBot.
 
 ```
-Email:Password
+[config]
+email=Email
+password=Password
 ```
 
 ##command_sets.info File
