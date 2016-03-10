@@ -67,3 +67,4 @@ This file holds the server IDs where PingBots welcome messages should be disable
 - wikipedia
 - cleverbot
 - Pillow
+- win32api

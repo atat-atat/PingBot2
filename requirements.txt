@@ -4,3 +4,4 @@ urllib
 BeautifulSoup
 cleverbot
 Pillow
+pywin32
