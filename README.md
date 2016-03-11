@@ -72,6 +72,20 @@ This file holds the server IDs where PingBots welcome messages should be disable
 12345678910,123243543565
 ```
 
+##no_say.info File
+This file holds the server IDs where PingBot cannot execute !say.
+
+```
+12345678910,133343546465
+```
+
+##banned_words.info File
+This file holds a list of words that if !say contains, it will ignore it and send the `nuisance_msg`.
+
+```
+!say|;bank|frick|swear word
+```
+
 ##Requirements
 
 - Python 3.5+
