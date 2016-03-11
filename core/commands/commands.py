@@ -1,10 +1,23 @@
 import discord
 from discord.ext import commands
+import os
+import configparser
 
 #Most of these commands are experimental.
 class Commands():
     def __init__(self, bot):
         self.bot = bot
+
+    config = configparser.ConfigParser()
+    config.read('./core/config/bot.info')
+    no_perm_msg = config.get('messages', 'no_permission', fallback="You do not have the permission to use this command.")
+    only_owner = config.get('messages', 'only_owner', fallback="You must be the owner of this server to use this command.")
+    annoyed = config.get('messages', 'nuisance_msg', fallback="Nice try.")
+    divide_zero = config.get('messages', 'divide_zero', fallback="Haha, you're funny.")
+    no_kick_perm = config.get('messages', 'no_kick_perm', fallback="Only the owner can kick users.")
+    kick_forbidden_perm = config.get('messages', 'kick_forbidden', fallback="Failed to kick user.\r\nThe bot does not have the appropriate permission to kick users.")
+    kick_success = config.get('messages', 'kick_success', fallback="Successfully kicked user.")
+    no_command_pm = config.get('messages', 'no_command_pm', fallback="You cannot use this command in a PM.")
 
     @commands.command()
     async def calc(self, *, value):
@@ -20,7 +33,7 @@ class Commands():
             await self.bot.say("SyntaxError occurred.")
         except ZeroDivisionError:
             await self.bot.type()
-            await self.bot.say("Haha, you're funny.")
+            await self.bot.say(self.divide_zero)
 
     @commands.command()
     async def join_date(self, member : discord.Member):
@@ -51,15 +64,15 @@ class Commands():
         """
         try:
             if ctx.message.channel.is_private:
-                await self.bot.say("You cannot use this command in a PM!")
+                await self.bot.say(self.no_command_pm)
             else:
                 if ctx.message.author.id == ctx.message.server.owner.id:
                     await self.bot.kick(member)
-                    await self.bot.say("Successfully kicked user.")
+                    await self.bot.say(self.kick_success)
                 else:
-                    await self.bot.say("Only the owner can kick users.")
+                    await self.bot.say(self.no_kick_perm)
         except discord.errors.Forbidden:
-            await self.bot.say("Failed to kick user!\r\nThe bot does not have the appropriate permission to kick users!")
+            await self.bot.say(self.kick_forbidden_perm)
 
     @commands.command()
     async def avatar(self, member : discord.Member):
@@ -74,6 +87,24 @@ class Commands():
         Returns your beloved waifu ;)
         """
         await self.bot.say("**!!WAIFU ALERT!!**\r\n{}\r\n**!!WAIFU ALERT!!**".format(member.avatar_url))
+
+    @commands.command(pass_context=True)
+    async def say(self, ctx, *, string : str):
+        """
+        Makes the bot say something.
+        """
+        sub_dir = "./core/config"
+        with open(os.path.join(sub_dir, "banned_words.info"), 'r') as bw_file:
+            banned_words = bw_file.read().split('|')
+
+        with open(os.path.join(sub_dir, "no_say.info"), 'r') as ns_file:
+            no_say = ns_file.read().split(',')
+
+        if ctx.message.server.id not in no_say:
+            if any(word in string for word in banned_words):
+                await self.bot.say(self.annoyed)
+            else:
+                await self.bot.say(string)
 
 def setup(bot):
     bot.add_cog(Commands(bot))

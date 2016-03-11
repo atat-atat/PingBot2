@@ -1,5 +1,5 @@
 [config]
-#Login stuff
+#Login
 email=Email
 password=Password
 #Command prefix
@@ -8,3 +8,14 @@ prefix=!
 description=I am a robot!
 #Whether the bot should PM the commands list. (recommended)
 pm_help=True
+
+[messages]
+no_permission=You can't do that!
+only_owner=You must be the server owner to use this command!
+nuisance_msg=Nice try.
+divide_zero=Haha, you're funny.
+no_kick_perm=You must be the owner of this server to kick users.
+kick_forbidden=Failed to kick user.
+The bot does not have the appropriate permission to kick users.
+kick_success=Successfully kicked user!
+no_command_pm=You cannot use this command in a PM!

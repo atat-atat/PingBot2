@@ -11,15 +11,20 @@ import configparser
 
 bot = discord.Client()
 
+info_dir = "./core/config"
 config = configparser.ConfigParser()
 config.read('./core/config/bot.info')
+email = config.get('config', 'email', fallback="Email")
+password = config.get('config', 'password', fallback="Password")
 cmd_prefix = config.get("config","prefix",fallback="!")
 description = config.get("config", "description", fallback="A discord bot built using Python (discord.py)")
 pm_help = config.get("config", "pm_help", fallback=True)
+no_perm_msg = config.get('messages', 'no_permission', fallback="You do not have the permission to use this command.")
+only_owner = config.get('messages', 'only_owner', fallback="You must be the owner of this server to use this command.")
+annoyed = config.get('messages', 'nuisance_msg', fallback="Nice try.")
 bot = commands.Bot(command_prefix=cmd_prefix, description=description, pm_help=pm_help)
 
 last_loaded = [] #last loaded cog
-info_dir = "./core/config"
 
 with open(os.path.join(info_dir, 'admins.info'), 'r') as admins_file:
 	admins = admins_file.read().split(',')
@@ -30,15 +35,10 @@ with open(os.path.join(info_dir, 'no_delete.info'), 'r') as nd_file:
 with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
 	command_sets = cs_file.read().split(',')
 
-config = configparser.SafeConfigParser()
-config.read("./core/config/bot.info")
-email = config.get('config', 'email')
-password = config.get('config', 'password')
-
 with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
 	no_welcome = nw_file.read().split(":")
 
-os.system("title PingBot2")
+os.system("title PingBot2 (Loading...)")
 
 #-----------------------------
 
@@ -64,7 +64,7 @@ async def load(ctx, extension_name : str):
 			return
 		await bot.say("Successfully loaded `{}`.".format(extension_name))
 	else:
-		await bot.say("You do not have permission to use this command!")
+		await bot.say(no_perm_msg)
 
 @bot.command(pass_context=True, hidden=True)
 async def unload(ctx, extension_name : str):
@@ -75,7 +75,7 @@ async def unload(ctx, extension_name : str):
 		bot.unload_extension(extension_name)
 		await bot.say("Successfully unloaded `{}`.".format(extension_name))
 	else:
-		await bot.say("You don't have permission to use that command!")
+		await bot.say(no_perm_msg)
 
 @bot.command(pass_context=True, hidden=True)
 async def reload(ctx):
@@ -97,6 +97,33 @@ async def show_cogs(ctx):
 		await bot.say("Recently loaded sets:")
 		for i in last_loaded:
 			await bot.say(i)
+
+@bot.command(pass_context=True, hidden=True)
+async def announce(ctx, *, string : str):
+	"""Sends this message to all servers the bot is currently connected to."""
+	sub_dir = "./core/config"
+	with open(os.path.join(sub_dir, "banned_words.info"), 'r') as bw_file:
+		banned_words = bw_file.read().split('|')
+
+	if is_dev(ctx) == True:
+		if any(word in string for word in banned_words):
+			await bot.say(annoyed)
+		else:
+			for i in bot.servers:
+				await bot.send_message(i, string) #bot.say(string)
+	else:
+		await bot.say(no_perm_msg)
+
+@bot.command(pass_context=True, hidden=True)
+async def servers(ctx):
+	"""Returns all servers the bot is currently connected to."""
+	if is_dev(ctx) == True:
+		servers = len(bot.servers)
+		for i in bot.servers:
+			await bot.say("`{}` : `{}`" .format(i.name, i.id))
+		await bot.say("Currently connected to `%s` server(s)." % servers)
+	else:
+		await bot.say(no_perm_msg)
 
 #-----------------------------
 #Bot events
@@ -120,10 +147,9 @@ async def on_ready():
 
 	title = bot.user.name #Set command prompt window caption to bot name
 
-	WindowNotify.balloon_tip(title, "Bot started successfully!")
-
 	
-	os.system("title "+title+"(PingBot2)")
+	os.system("title "+title+" (PingBot2)")
+	WindowNotify.balloon_tip(title, "Bot started successfully!")
 
 	print(" ")
 
@@ -137,15 +163,20 @@ async def on_message(msg):
 	if msg.content.startswith("!leave"):
 		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
 			await bot.leave_server(msg.server)
+		else:
+			await bot.say(only_owner)
 
 	#rip message
 	if msg.content.startswith("!rip"):
 		try:
 			name = msg.content[len("!rip "):].strip()
+			name_l = len(name)
+			name_length = int(128/name_l*4/3)
+			await bot.send_message(msg.channel, name_length)
 			img = Image.open("./core/images/rip.jpg")
 			draw = ImageDraw.Draw(img)
 				# font = ImageFont.truetype(<font-file>, <font-size>)
-			font = ImageFont.truetype("comic.ttf", 28)
+			font = ImageFont.truetype("comic.ttf", name_length)
 				# draw.text((x, y),"Sample Text",(r,g,b))
 			draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
 			img.save('./core/images/rip-radioedit.jpg')
@@ -174,7 +205,7 @@ async def on_message(msg):
 				welcome_file.write(servw)
 			await bot.send_message(msg.channel, "Successfully modified server welcome message!")
 		else:
-			await bot.send_message(msg.channel, "You do not have the permission to modify the server welcome message.")
+			await bot.send_message(msg.channel, only_owner)
 
 	await bot.process_commands(msg)
 	print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
@@ -257,9 +288,12 @@ try:
 		print(colors.cred+"ERROR! Failed to login!")
 		print("The information you set in bot.info is wrong."+colors.cwhite)
 		WindowNotify.balloon_tip(title, "Failed to login! (Check console.)")
-	
 except Exception:
 	WindowNotify.balloon_tip(title, "Something went wrong!")
 	loop.run_until_complete(bot.close())
+except ConnectionResetError as e:
+	print(colors.cred+"ERROR! PingBot unexpectedly closed!"+colors.cwhite)
+	print(e)
+	WindowNotify.balloon_tip(title, "Unexpectedly closed! (Check console.)")
 finally:
 	loop.close()
