@@ -19,6 +19,8 @@ password = config.get('config', 'password', fallback="Password")
 cmd_prefix = config.get("config","prefix",fallback="!")
 description = config.get("config", "description", fallback="A discord bot built using Python (discord.py)")
 pm_help = config.get("config", "pm_help", fallback=True)
+enable_delete_msg = config.get("config", "enable_delete_msg", fallback=True)
+enable_welcome_msg = config.get("config", "enable_welcome_msg", fallback=True)
 no_perm_msg = config.get('messages', 'no_permission', fallback="You do not have the permission to use this command.")
 only_owner = config.get('messages', 'only_owner', fallback="You must be the owner of this server to use this command.")
 annoyed = config.get('messages', 'nuisance_msg', fallback="Nice try.")
@@ -62,6 +64,9 @@ async def load(ctx, extension_name : str):
 			await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
 			print(colors.cred+e+colors.cwhite)
 			return
+		except discord.errors.ClientException:
+			await bot.say("Failed to load extension!")
+			print("{}")
 		await bot.say("Successfully loaded `{}`.".format(extension_name))
 	else:
 		await bot.say(no_perm_msg)
@@ -81,7 +86,10 @@ async def unload(ctx, extension_name : str):
 async def reload(ctx):
 	"""Reloads all loaded extensions"""
 	if is_dev(ctx) == True:
-		reset(ctx)
+		try:
+			reset(ctx)
+		except:
+			await bot.say("Something went wrong!")
 		if reset(ctx) == True:
 			await bot.say("Successfully reloaded!")
 		else:
@@ -93,7 +101,7 @@ async def show_cogs(ctx):
 	if is_dev(ctx) == True:
 		await bot.say("Default command sets:")
 		for i in command_sets:
-			await bot.say(i)
+			await bot.say("`{}`".format(i))
 		await bot.say("Recently loaded sets:")
 		for i in last_loaded:
 			await bot.say(i)
@@ -172,7 +180,6 @@ async def on_message(msg):
 			name = msg.content[len("!rip "):].strip()
 			name_l = len(name)
 			name_length = int(128/name_l*4/3)
-			await bot.send_message(msg.channel, name_length)
 			img = Image.open("./core/images/rip.jpg")
 			draw = ImageDraw.Draw(img)
 				# font = ImageFont.truetype(<font-file>, <font-size>)
@@ -213,23 +220,25 @@ async def on_message(msg):
 #welcome message
 @bot.event
 async def on_member_join(member):
-	if member.server.id not in no_welcome:
-		server_id = member.server.id
-		server = member.server
-		sub_dir = "./core/docs/welcome"
-		try:
-			with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
-				welcome = welcome_file.read()
-		except FileNotFoundError:
-			with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
-				welcome = welcome_file.read()
-		await bot.send_typing(server)
-		await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
+	if enable_welcome_msg == True:
+		if member.server.id not in no_welcome:
+			server_id = member.server.id
+			server = member.server
+			sub_dir = "./core/docs/welcome"
+			try:
+				with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
+					welcome = welcome_file.read()
+			except FileNotFoundError:
+				with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
+					welcome = welcome_file.read()
+			await bot.send_typing(server)
+			await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
 
 @bot.event
 async def on_message_delete(msg):
-	if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
-		await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
+	if enable_delete_msg == True:
+		if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
+			await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
 
 
 #-----------------------------

@@ -1,13 +1,14 @@
 [config]
-#Login
 email=Email
 password=Password
-#Command prefix
+original_name=PingBot
 prefix=!
-#Bot description
 description=I am a robot!
-#Whether the bot should PM the commands list. (recommended)
 pm_help=True
+allow_bot_changes=True
+enable_welcome_msg=True
+enable_delete_msg=True
+enable_clear_cmd=False
 
 [messages]
 no_permission=You can't do that!
@@ -16,6 +17,6 @@ nuisance_msg=Nice try.
 divide_zero=Haha, you're funny.
 no_kick_perm=You must be the owner of this server to kick users.
 kick_forbidden=Failed to kick user.
-The bot does not have the appropriate permission to kick users.
 kick_success=Successfully kicked user!
 no_command_pm=You cannot use this command in a PM!
+failed_to_find_user=Failed to find that user!

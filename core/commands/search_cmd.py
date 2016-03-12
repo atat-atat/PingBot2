@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 import wikipedia
 import cleverbot
+import aiohttp
+import asyncio
 
 cb1 = cleverbot.Cleverbot()
 
@@ -17,16 +19,27 @@ class Commands():
     @commands.command()
     async def google(self, *, search_string : str):
         """Searches Google."""
-        query = urllib.parse.urlencode({'q': search_string})
-        url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
-        search_response = urllib.request.urlopen(url)
-        search_results = search_response.read().decode("utf8")
-        results = json.loads(search_results)
-        data = results['responseData']
-        hits = data['results']
-        for h in hits:
-            h = h['url']
-        await self.bot.say(h)
+        query = search_string
+        google_url = 'http://ajax.googleapis.com/ajax/services/search/web'
+        params = {"v": "1.0", "safe": "off", "q": query}
+        output = ""
+        async def fetch_page(session, url):
+            with aiohttp.Timeout(10):
+                async with session.get(google_url, params = params) as response:
+                    assert response.status == 200
+                    return await response.json()
+        loop = asyncio.get_event_loop()
+        with aiohttp.ClientSession(loop=loop) as session:
+            content = await fetch_page(session, google_url)
+            resultnumber = content["responseData"]["cursor"]["resultCount"]
+            output += "I found `%s` results! Here are my favourites:\n"%resultnumber
+            number = 1
+            for x in content["responseData"]["results"]:
+                url = x["url"]
+                info = x["titleNoFormatting"]
+                output += str(number) + ": " +info +"\n" + url + "\n"
+                number += 1
+            await self.bot.say(output)
 
     @commands.command()
     async def youtube(self, *, search_string : str):
@@ -38,10 +51,7 @@ class Commands():
         search_results = search_response.read().decode("utf8")
         results = json.loads(search_results)
         data = results['responseData']
-        #print('Total results: %s' % data['cursor']['estimatedResultCount'])
         hits = data['results']
-        #print('Top %d hits:' % len(hits))
-                #len(hits) = 1
         for h in hits:
             h = h['url']
         await self.bot.say(h)
@@ -50,7 +60,7 @@ class Commands():
     async def urban(self, *, search_string : str):
         """Searches Urban Dictionary."""
         try:
-            await self.bot.say("Showing definition of {} from Urban Dictionary.".format(search_string))
+            await self.bot.say("Showing definition of `{}` from Urban Dictionary.".format(search_string))
             r = requests.get("http://www.urbandictionary.com/define.php?term={}".format(search_string))
             soup = BeautifulSoup(r.content)
             meaning = soup.find("div",attrs={"class":"meaning"}).text
@@ -65,7 +75,7 @@ class Commands():
     async def define(self, *, search_string : str):
         """Defines a word."""
         try:
-            await self.bot.say("Showing definition of {} from Dictionary.com".format(search_string))
+            await self.bot.say("Showing definition of `{}` from Dictionary.com".format(search_string))
             r = requests.get("http://dictionary.reference.com/browse/{}?s=t".format(search_string))
             soup = BeautifulSoup(r.content)
             meaning = soup.find("div",attrs={"class":"def-content"}).text

@@ -25,21 +25,25 @@ This file holds most of PingBot's configurations.
 
 ```
 [config]
-email=Email
-password=Password
-prefix=Command prefix.
-description=Your bot description.
-pm_help=Whether the bot should send the help messages via PM. (recommended)
+email=The bot's email address.
+password=The bot's password.
+original_name=The original bot name. (if you want to quickly revert your bot name back to its original name.)
+prefix=The command prefix.
+description=The bot description.
+pm_help=Sends the user the commands list via PM.
+allow_bot_changes=Lets users use !change_game and change_name.
+enable_welcome_msg=Enables the welcome message.
+enable_delete_msg=Enables the message-delete system. (documented below)
 
 [messages]
-no_permission=When a user attempts a command that they don't have permission to use.
-only_owner=When a user attempts a command that they must be the server owner to use.
-nuisance_msg=The nuisance message.
-divide_zero=When the user attempts to divide by zero via !calc.
-no_kick_perm=When a user attempts to use !kick, but they aren't the server owner.
-kick_forbidden=When the bot does not have permission to kick users.
-kick_success=When the bot successfully kicked the user.
-no_command_pm=When a user attempts to run a command via PM that cannot be ran through PM.
+no_permission=When a user attempts a command that they do not have permission to use.
+only_owner=When a user attempts a command that requires them to be the server owner.
+nuisance_msg=Nice try.
+divide_zero=When a user attempts to divide by zero via !calc.
+no_kick_perm=When the user attempts to use !kick, but they aren't the server owner.
+kick_forbidden=When the bot does not have the permission to kick users.
+kick_success=When the bot successfully kicked a user.
+no_command_pm=When a user attempts a command that cannot be executed in a PM.
 ```
 
 ##command_sets.info File
