@@ -40,6 +40,8 @@ with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
 with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
 	no_welcome = nw_file.read().split(":")
 
+bot_version = "PingBot2.0.7"
+
 os.system("title PingBot2 (Loading...)")
 
 #-----------------------------
@@ -132,6 +134,10 @@ async def servers(ctx):
 		await bot.say("Currently connected to `%s` server(s)." % servers)
 	else:
 		await bot.say(no_perm_msg)
+
+@bot.command()
+async def version():
+	await bot.say("The version of PingBot that is currently installed is, `{}`".format(bot_version))
 
 #-----------------------------
 #Bot events
