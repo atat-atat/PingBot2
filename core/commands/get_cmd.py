@@ -51,15 +51,7 @@ class GetInfo():
 		Returns the ID of a channel.
 		"""
 		await self.bot.say("The ID of `{}` is `{}`".format(channel.name, channel.id))
-
-	@commands.command()
-	async def serverid(self, server : discord.Server):
-		"""
-		Returns the ID of a server.
-		"""
-		await self.bot.say("The ID of `{}` is `{}`".format(server.name, server.id))
 		
-
 	@commands.command()
 	async def userinfo(self, member : discord.Member):
 		"""
