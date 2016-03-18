@@ -1,46 +1,59 @@
-from discord.ext import commands
+"""
+PingBot2; a bot for Discord made using Discord.py, made by Oppy/@@.
+"""
+from core.config import ConfigLoader
 from core.colors import colors
-from core.sysnotify import WindowNotify
-from PIL import Image, ImageFont, ImageDraw
+from core.errors import ErrorsManager
+from core.logs import LogManager
+from core.updater import Updater
+from core.util import Util
+
+from discord.ext import commands
 import asyncio
 import random
+import sys
 import os
 import logging
 import discord
-import configparser
 
+l = LogManager()
+e = ErrorsManager()
+c = ConfigLoader()
+u = Updater()
+util = Util()
 bot = discord.Client()
 
-info_dir = "./core/config"
-config = configparser.ConfigParser()
-config.read('./core/config/bot.info')
-email = config.get('config', 'email', fallback="Email")
-password = config.get('config', 'password', fallback="Password")
-cmd_prefix = config.get("config","prefix",fallback="!")
-description = config.get("config", "description", fallback="A discord bot built using Python (discord.py)")
-pm_help = config.get("config", "pm_help", fallback=True)
-enable_delete_msg = config.get("config", "enable_delete_msg", fallback=True)
-enable_welcome_msg = config.get("config", "enable_welcome_msg", fallback=True)
-no_perm_msg = config.get('messages', 'no_permission', fallback="You do not have the permission to use this command.")
-only_owner = config.get('messages', 'only_owner', fallback="You must be the owner of this server to use this command.")
-annoyed = config.get('messages', 'nuisance_msg', fallback="Nice try.")
-bot = commands.Bot(command_prefix=cmd_prefix, description=description, pm_help=pm_help)
+u.check_updates('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0')
 
-last_loaded = [] #last loaded cog
+sys_version = c.load(True, 'sys_version')
+bot_name = c.load(False, 'bot_name')
+email = c.load(False, 'email')
+password = c.load(False, 'password')
+cmd_prefix = c.load(False, 'prefix')
+pm_help = c.load(False, 'pm_help')
+bot_description = c.load(False, 'description')
+enable_delete_msg = c.load(False, 'enable_delete_msg')
+enable_welcome_msg = c.load(False, 'enable_welcome_msg')
+enable_offline_messenger = c.load(False, 'enable_offline_messenger')
+enable_random_names = c.load(False, 'enable_random_names')
+enable_custom_commands = c.load(False, 'enable_custom_commands')
+startup_cogs = c.load(False, 'startup_cogs')
+banned_say_words = c.load(False, 'banned_say_words')
 
-with open(os.path.join(info_dir, 'admins.info'), 'r') as admins_file:
-	admins = admins_file.read().split(',')
+no_perm_msg = c.load(False, 'no_perm_msg')
+only_owner = c.load(False, 'only_owner')
+annoyed = c.load(False, 'annoyed')
 
-with open(os.path.join(info_dir, 'no_delete.info'), 'r') as nd_file:
-	no_delete = nd_file.read().split(',')
+admins = c.load(False, 'admins')
+no_delete = c.load(False, 'no_delete')
+no_say = c.load(False, 'no_say')
+no_welcome = c.load(False, 'no_welcome')
 
-with open(os.path.join(info_dir, 'command_sets.info'), 'r') as cs_file:
-	command_sets = cs_file.read().split(',')
+bot = commands.Bot(command_prefix=cmd_prefix, description=bot_description, pm_help=pm_help)
 
-with open(os.path.join(info_dir, "no_welcome.info"), 'r') as nw_file:
-	no_welcome = nw_file.read().split(":")
+bot_version = c.load(True, 'sys_version')
 
-bot_version = "PingBot2.0.7"
+last_loaded = [] #last loaded cog(s)
 
 os.system("title PingBot2 (Loading...)")
 
@@ -58,17 +71,25 @@ logger.addHandler(handler)
 @bot.command(pass_context=True, hidden=True)
 async def load(ctx, extension_name : str):
 	"""Loads an extension."""
-	if is_dev(ctx) == True:
+	if util.is_bot_admin(ctx) == True:
 		try:
-			bot.load_extension(extension_name)
-			last_loaded.append(extension_name)
-		except (AttributeError, ImportError) as e:
+			if extension_name in sys.modules:
+				bot.load_extension(extension_name)
+				last_loaded.append(extension_name)
+			else:
+				await bot.say("The cog, `{}` has already been loaded!\r\nUse !reload to reload the cogs.".format(extension_name))
+		except Exception as e:
 			await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
-			print(colors.cred+e+colors.cwhite)
+			print(colors.cred)
+			print(e)
+			print(colors.cwhite)
 			return
-		except discord.errors.ClientException:
+		except discord.errors.ClientException as e:
 			await bot.say("Failed to load extension!")
-			print("{}")
+			print(colors.cred)
+			print(e)
+			print(colors.cwhite)
+			return
 		await bot.say("Successfully loaded `{}`.".format(extension_name))
 	else:
 		await bot.say(no_perm_msg)
@@ -76,20 +97,23 @@ async def load(ctx, extension_name : str):
 @bot.command(pass_context=True, hidden=True)
 async def unload(ctx, extension_name : str):
 	"""Unloads an extension."""
-	if is_dev(ctx) == True:
-		if extension_name in last_loaded:
-		    last_loaded.remove(extension_name)
-		bot.unload_extension(extension_name)
-		await bot.say("Successfully unloaded `{}`.".format(extension_name))
+	if util.is_bot_admin(ctx) == True:
+		if extension_name in sys.modules:
+			if extension_name in last_loaded:
+				last_loaded.remove(extension_name)
+			bot.unload_extension(extension_name)
+			await bot.say("Successfully unloaded `{}`.".format(extension_name))
+		else:
+			await bot.say("`{}` is not loaded!".format(extension_name))
 	else:
 		await bot.say(no_perm_msg)
 
 @bot.command(pass_context=True, hidden=True)
 async def reload(ctx):
 	"""Reloads all loaded extensions"""
-	if is_dev(ctx) == True:
+	if util.is_bot_admin(ctx) == True:
 		try:
-			reset(ctx)
+			util.reset(ctx, startup_cogs, last_loaded)
 		except:
 			await bot.say("Something went wrong!")
 		if reset(ctx) == True:
@@ -100,23 +124,19 @@ async def reload(ctx):
 @bot.command(pass_context=True, hidden=True)
 async def show_cogs(ctx):
 	"""Shows a list of loaded cogs."""
-	if is_dev(ctx) == True:
+	if util.is_bot_admin(ctx) == True:
 		await bot.say("Default command sets:")
-		for i in command_sets:
+		for i in startup_cogs:
 			await bot.say("`{}`".format(i))
 		await bot.say("Recently loaded sets:")
 		for i in last_loaded:
-			await bot.say(i)
+			await bot.say("`{}`".format(i))
 
 @bot.command(pass_context=True, hidden=True)
 async def announce(ctx, *, string : str):
 	"""Sends this message to all servers the bot is currently connected to."""
-	sub_dir = "./core/config"
-	with open(os.path.join(sub_dir, "banned_words.info"), 'r') as bw_file:
-		banned_words = bw_file.read().split('|')
-
-	if is_dev(ctx) == True:
-		if any(word in string for word in banned_words):
+	if util.is_bot_admin(ctx) == True:
+		if any(word in string for word in banned_say_words):
 			await bot.say(annoyed)
 		else:
 			for i in bot.servers:
@@ -125,9 +145,23 @@ async def announce(ctx, *, string : str):
 		await bot.say(no_perm_msg)
 
 @bot.command(pass_context=True, hidden=True)
+async def set_show(ctx, *, option : str):
+	if util.is_bot_admin(ctx) == True:
+		if 'password' not in option:
+			setting = c.load(False, option)
+			if setting != None:
+				await bot.say("`{}` is set to `{}`".format(option, setting))
+			else:
+				await bot.say("That setting does not exist!")
+		else:
+			await bot.say(annoyed)
+	else:
+		await bot.say(no_perm_msg)
+
+@bot.command(pass_context=True, hidden=True)
 async def servers(ctx):
 	"""Returns all servers the bot is currently connected to."""
-	if is_dev(ctx) == True:
+	if util.is_bot_admin(ctx) == True:
 		servers = len(bot.servers)
 		for i in bot.servers:
 			await bot.say("`{}` : `{}`" .format(i.name, i.id))
@@ -137,7 +171,9 @@ async def servers(ctx):
 
 @bot.command()
 async def version():
-	await bot.say("The version of PingBot that is currently installed is, `{}`".format(bot_version))
+	real_version = u.download_value('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0', 'real_version', './core/sys/realver.json')
+	u.delete_file('./core/sys/realver.json')
+	await bot.say("The currently installed PingBot version is, `{}` (Latest: `{}`)".format(bot_version, real_version))
 
 #-----------------------------
 #Bot events
@@ -145,25 +181,30 @@ async def version():
 #display information when the bot is ready.
 @bot.event
 async def on_ready():
-	print(colors.cgreen+"User: %s" % bot.user.name)
-	print("ID: %s" % bot.user.id+colors.cwhite)
+	with open('./core/images/icon.png', 'rb') as avatar_file:
+		avatar = avatar_file.read()
+	await bot.edit_profile(password=password, username=bot_name, avatar=avatar)
+	print(colors.cgreen+"Successfully loaded PingBot!")
+	print("Currently running version; %s" % colors.bwhite+colors.cblue+sys_version+colors.bblack+colors.cgreen)
+	print("--------------------------------------")
+	print("User: %s" % bot.user.name)
+	print("ID: %s" % bot.user.id)
 	servers = len(bot.servers) #get amount of servers connected to
 	print("Servers ({}):".format(servers))
 	for server in bot.servers: #show a list of servers that the bot is currently connected to
 		print("	{} : {}".format(server.name,server.id))
-	for extension_name in command_sets: #load default extensions
-		bot.load_extension(extension_name)
+	print("Cogs ({}): {}".format(len(startup_cogs), ', '.join(startup_cogs)))
+	print(colors.cwhite)
 
-	sub_dir = "./core/docs/list"
-	with open(os.path.join(sub_dir, "games.list"), 'r') as games_file:
-			games = games_file.read().split(',')
+	for i in startup_cogs:
+		bot.load_extension(i)
+
+	games = c.load(False, 'games')
 	await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 
 	title = bot.user.name #Set command prompt window caption to bot name
-
 	
 	os.system("title "+title+" (PingBot2)")
-	WindowNotify.balloon_tip(title, "Bot started successfully!")
 
 	print(" ")
 
@@ -175,53 +216,32 @@ async def on_message(msg):
 
 	#leave the server
 	if msg.content.startswith("!leave"):
-		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
+		if util.is_bot_admin(ctx) == True or is_owner(ctx) == True:
 			await bot.leave_server(msg.server)
 		else:
 			await bot.say(only_owner)
 
-	#rip message
-	if msg.content.startswith("!rip"):
-		try:
-			name = msg.content[len("!rip "):].strip()
-			name_l = len(name)
-			name_length = int(128/name_l*4/3)
-			img = Image.open("./core/images/rip.jpg")
-			draw = ImageDraw.Draw(img)
-				# font = ImageFont.truetype(<font-file>, <font-size>)
-			font = ImageFont.truetype("comic.ttf", name_length)
-				# draw.text((x, y),"Sample Text",(r,g,b))
-			draw.text((58, 149),"{} :(".format(name),(0,0,0),font=font)
-			img.save('./core/images/rip-radioedit.jpg')
-			await bot.send_file(msg.channel, "./core/images/rip-radioedit.jpg")
-		except IndexError:
-			await bot.send_typing(msg.channel)
-			await bot.send_message(msg.channel, "http://i.imgur.com/Ij5lWrM.png")
+	if enable_custom_commands == True:
+		if msg.content.startswith(cmd_prefix):
+			command = util.custom_command(msg.content)
+			if command != None:
+				await bot.send_message(msg.channel, command)
 
 	#message the user if the user mentioned is offline
-	if len(msg.mentions) > 0:
-		for user in msg.mentions:
-			if user.status == user.status.offline:
-				server = msg.server
-				channel = msg.channel
-				await bot.send_typing(msg.channel)
-				await bot.send_message(msg.channel, "`{}` is currently offline!\r\nYour message has been sent via PM.".format(user.name))
-				await bot.send_typing(user)
-				await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\r\n\r\n{}".format(msg.author.name, server, channel, msg.content))
-
-	#edit the welcome message of a server.
-	if msg.content.startswith('!welcome_edit'):
-		if msg.author.id == msg.server.owner.id or msg.author.id in admins:
-			servw = msg.content[len("!welcome_edit "):].strip()
-			sub_dir = "./core/docs/welcome"
-			with open(os.path.join(sub_dir, msg.server.id+".txt"), 'w') as welcome_file:
-				welcome_file.write(servw)
-			await bot.send_message(msg.channel, "Successfully modified server welcome message!")
-		else:
-			await bot.send_message(msg.channel, only_owner)
+	if enable_offline_messenger == True:
+		if len(msg.mentions) > 0:
+			for user in msg.mentions:
+				if user.status == user.status.offline:
+					server = msg.server
+					channel = msg.channel
+					await bot.send_message(msg.channel, "`{}` is currently offline!\r\nYour message has been sent via PM.".format(user.name))
+					await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\r\n\r\n{}".format(msg.author.name, server, channel, msg.content))
 
 	await bot.process_commands(msg)
-	print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
+	try:
+		print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
+	except UnicodeEncodeError:
+		print("[{}][{}][{}] [Contains Character]".format(msg.server, msg.channel, msg.author))
 
 #welcome message
 @bot.event
@@ -230,12 +250,11 @@ async def on_member_join(member):
 		if member.server.id not in no_welcome:
 			server_id = member.server.id
 			server = member.server
-			sub_dir = "./core/docs/welcome"
 			try:
-				with open(os.path.join(sub_dir, server_id+".txt"),'r') as welcome_file:
+				with open('./core/docs/welcome' + server_id + '.txt', 'r') as welcome_file:
 					welcome = welcome_file.read()
 			except FileNotFoundError:
-				with open(os.path.join(sub_dir, "0.txt"),'r') as welcome_file:
+				with open('./core/docs/welcome/0.txt','r') as welcome_file:
 					welcome = welcome_file.read()
 			await bot.send_typing(server)
 			await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
@@ -246,48 +265,13 @@ async def on_message_delete(msg):
 		if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
 			await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
 
-
 #-----------------------------
-#Other bot functions
-
-#returns a boolean depending on if the message author is a developer
-def is_dev(ctx):
-	if ctx.message.author.id in admins:
-		return True
-	else:
-		print(colors.cred+"USER ATTEMPTED UNAUTHORIZED DEV COMMAND!"+colors.cwhite)
-		return False
-
-#returns a boolean depending on if the message author is an owner
-def is_owner(ctx):
-	if ctx.message.channel.is_private:
-		return "PRIV"
-	else:
-		if ctx.message.author.id == ctx.message.server.owner.id:
-			return True
-		else:
-			return False
-
-#reloads the extensions.
-def reset(ctx):
-	if is_dev(ctx) == True:
-		for i in command_sets:
-			bot.unload_extension(i)
-			bot.load_extension(i)
-		for i in last_loaded:
-			bot.unload_extension(i)
-			bot.load_extension(i)
-		return True
-	else:
-		return False
 
 #random game loop
 async def random_game():
 	await bot.wait_until_ready()
 	while not bot.is_closed:
-		sub_dir = "./core/docs/list"
-		with open(os.path.join(sub_dir, "games.list"), 'r') as games_file:
-			games = games_file.read().split(',')
+		games = c.load(False, 'games')
 		await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 		await asyncio.sleep(100)
 
@@ -296,19 +280,19 @@ loop = asyncio.get_event_loop()
 
 try:
 	loop.create_task(random_game())
+	if enable_random_names == True:
+		loop.create_task(random_name())
 	try:
 		loop.run_until_complete(bot.login(email, password))
 		loop.run_until_complete(bot.connect())
 	except discord.errors.LoginFailure:
 		print(colors.cred+"ERROR! Failed to login!")
 		print("The information you set in bot.info is wrong."+colors.cwhite)
-		WindowNotify.balloon_tip(title, "Failed to login! (Check console.)")
+		e.subtle_error('BadLogin', 'Bad login information given.')
 except Exception:
-	WindowNotify.balloon_tip(title, "Something went wrong!")
+	e.subtle_error('Exception', 'Unexpected exception!')
 	loop.run_until_complete(bot.close())
 except ConnectionResetError as e:
-	print(colors.cred+"ERROR! PingBot unexpectedly closed!"+colors.cwhite)
-	print(e)
-	WindowNotify.balloon_tip(title, "Unexpectedly closed! (Check console.)")
+	e.return_error(3, 'UnexpectedClose', 'Unexpectedly closed connection.')
 finally:
 	loop.close()
