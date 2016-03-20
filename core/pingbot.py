@@ -97,19 +97,19 @@ class PingbotCore:
 		osu.set_key(key)
 
 	def osu_get_beatmap(self, name, value, parameters='m=0'):
-		osu.get_beatmap(name, value, parameters)
+		return osu.get_beatmap(name, value, parameters)
 
 	def osu_get_user(self, name, value, parameters='m=0'):
-		osu.get_user(name, value, parameters)
+		return osu.get_user(name, value, parameters)
 
 	def search_standard(self, search_link, query_string='bacon'):
-		search.search(search_link, query_string)
+		return search.search(search_link, query_string)
 
 	def search_youtube(self, query_string):
-		search.youtube(query_string)
+		return search.youtube(query_string)
 
 	def search_div_set_link(self, url, query):
 		search_div.div_set_link(url, query)
 
 	def search_div_get(self, content):
-		search_div.div_get('class', content)
+		return search_div.div_get('class', content)

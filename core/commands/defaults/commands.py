@@ -32,7 +32,7 @@ class Commands():
         Returns your beloved waifu ;)
         """
         if member != None:
-            await self.bot.say("**!!WAIFU ALERT!!**\r\n{}\r\n**!!WAIFU ALERT!!**".format(member.avatar_url))
+            await self.bot.say("**!!WAIFU ALERT!!**\n{}\n**!!WAIFU ALERT!!**".format(member.avatar_url))
         else:
             await self.bot.say(self.no_user_found)
 

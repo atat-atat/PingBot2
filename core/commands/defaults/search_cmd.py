@@ -30,7 +30,7 @@ class Commands():
             meaning = pingbot.search_div_get('meaning')
             example = pingbot.search_div_get('example')
             contributor = pingbot.search_div_get('contributor')
-            await self.bot.say("{}\r\n\r\n**Example -**\r\n{}\r\nContributor-\r\n{}".format(meaning, example, contributor))
+            await self.bot.say("{}\n\n**Example -**\n{}\nContributor-\n{}".format(meaning, example, contributor))
         except AttributeError:
             await self.bot.say("Could not find a definition for that word.")
         except discord.errors.HTTPException:

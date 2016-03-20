@@ -72,9 +72,9 @@ class GetInfo():
 		Shows information about a user.
 		"""
 		if member != None:
-			await self.bot.say("```Showing information about {} -\r\nName: {}\r\nID: {}\r\nDiscriminator: {}\r\nStatus: {}\r\nJoined: {}\r\nCurrently Playing: {}\r\nAFK: {}\r\nMuted: {}\r\nDeafened: {}\r\nVoice Muted: {}\r\nSound Muted: {}\r\nAvatar: {}```\r\n{}".format(member.name, member.name, member.id, member.discriminator, member.status, member.joined_at, member.game, member.is_afk, member.mute, member.deaf, member.self_mute, member.self_deaf, member.avatar, member.avatar_url))
+			await self.bot.say("```Showing information about {} -\nName: {}\nID: {}\nDiscriminator: {}\nStatus: {}\nJoined: {}\nCurrently Playing: {}\nAFK: {}\nMuted: {}\nDeafened: {}\nVoice Muted: {}\nSound Muted: {}\nAvatar: {}```\n{}".format(member.name, member.name, member.id, member.discriminator, member.status, member.joined_at, member.game, member.is_afk, member.mute, member.deaf, member.self_mute, member.self_deaf, member.avatar, member.avatar_url))
 		else:
-			await self.bot.say("```Showing information about {} -\r\nName: {}\r\nID: {}\r\nDiscriminator: {}\r\nStatus: {}\r\nJoined: {}\r\nCurrently Playing: {}\r\nAFK: {}\r\nMuted: {}\r\nDeafened: {}\r\nVoice Muted: {}\r\nSound Muted: {}\r\nAvatar: {}```\r\n{}".format(ctx.message.author.name, ctx.message.author.name, ctx.message.author.id, ctx.message.author.discriminator, ctx.message.author.status, ctx.message.author.joined_at, ctx.message.author.game, ctx.message.author.is_afk, ctx.message.author.mute, ctx.message.author.deaf, ctx.message.author.self_mute, ctx.message.author.self_deaf, ctx.message.author.avatar, ctx.message.author.avatar_url))
+			await self.bot.say("```Showing information about {} -\nName: {}\nID: {}\r\nDiscriminator: {}\nStatus: {}\nJoined: {}\nCurrently Playing: {}\nAFK: {}\nMuted: {}\nDeafened: {}\nVoice Muted: {}\nSound Muted: {}\nAvatar: {}```\n{}".format(ctx.message.author.name, ctx.message.author.name, ctx.message.author.id, ctx.message.author.discriminator, ctx.message.author.status, ctx.message.author.joined_at, ctx.message.author.game, ctx.message.author.is_afk, ctx.message.author.mute, ctx.message.author.deaf, ctx.message.author.self_mute, ctx.message.author.self_deaf, ctx.message.author.avatar, ctx.message.author.avatar_url))
 
 
 	@commands.command(pass_context=True)
@@ -83,7 +83,7 @@ class GetInfo():
 		Returns the information of the server.
 		"""
 		server = ctx.message.author.server
-		await self.bot.say("```Showing information about {}\r\nName: {}\r\nID: {}\r\nRegion: {}\r\nOwner: {}\r\nIcon: {}```\r\n{}".format(server.name, server.name, server.id, server.region, server.owner, server.icon, server.icon_url))
+		await self.bot.say("```Showing information about {}\nName: {}\nID: {}\nRegion: {}\nOwner: {}\nIcon: {}```\n{}".format(server.name, server.name, server.id, server.region, server.owner, server.icon, server.icon_url))
 
 	@commands.command(pass_context=True)
 	async def avatar(self, ctx, member : discord.Member=None):
@@ -98,8 +98,8 @@ class GetInfo():
 	@commands.command()
 	async def osu_user(self, _username : str):
 		if self.enable_osu == True:
-			osu_key = c.load(False, 'osu_key')
-			o.set_key(osu_key)
+			osu_key = pingbot.config_load(False, 'osu_key')
+			pingbot.osu_set_key(osu_key)
 
 			user_id = pingbot.osu_get_user(_username, 'user_id')
 			username = pingbot.osu_get_user(_username, 'username')
@@ -117,7 +117,7 @@ class GetInfo():
 			count_rank_a = pingbot.osu_get_user(_username, 'count_rank_a')
 			country = pingbot.osu_get_user(_username, 'country')
 			pp_country_rank = pingbot.osu_get_user(_username, 'pp_country_rank')
-			await self.bot.say("```User: {} ({})\r\nAccuracy: {}\r\nLevel: {}\r\nPlaycount: {}\r\nCountry: {}\r\nPP: {} (#{})\r\n(300: {} | 100: {} | 50: {})\r\n(SS: {} | S: {} | A: {})```".format(username, user_id, accuracy, level, playcount, country, pp_raw, pp_country_rank, count300, count100, count50, count_rank_ss, count_rank_s, count_rank_a))
+			await self.bot.say("```User: {} ({})\nAccuracy: {}\nLevel: {}\nPlaycount: {}\nCountry: {}\nPP: {} (#{})\n(300: {} | 100: {} | 50: {})\n(SS: {} | S: {} | A: {})```".format(username, user_id, accuracy, level, playcount, country, pp_raw, pp_country_rank, count300, count100, count50, count_rank_ss, count_rank_s, count_rank_a))
 
 	@commands.command()
 	async def weather(self, zip_code : str):
@@ -137,7 +137,7 @@ class GetInfo():
 			wind_degrees = pingbot.wunderground_weather_get(zip_code, 'wind_degrees')
 			observation_time = pingbot.wunderground_weather_get(zip_code, 'observation_time')
 
-			await self.bot.say("```{}\r\nTemperature: {}\r\nDewpoint: {}\r\nFeelslike temperature: {}\r\nRelative humidity: {}\r\nWind direction: {}\r\nWind MPH: {}\r\nWind degrees: {}\r\n(Observation time: {})```\r\n{}".format(location, temperature_string, dewpoint_string, feelslike_string, relative_humidity, wind_string, wind_mph, wind_degrees, observation_time, icon_url))
+			await self.bot.say("```{}\nTemperature: {}\nDewpoint: {}\nFeelslike temperature: {}\nRelative humidity: {}\nWind direction: {}\nWind MPH: {}\nWind degrees: {}\n(Observation time: {})```\n{}".format(location, temperature_string, dewpoint_string, feelslike_string, relative_humidity, wind_string, wind_mph, wind_degrees, observation_time, icon_url))
 
 def setup(bot):
     bot.add_cog(GetInfo(bot))

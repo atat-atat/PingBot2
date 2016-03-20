@@ -70,7 +70,7 @@ async def load(ctx, extension_name : str):
 				bot.load_extension(extension_name)
 				last_loaded.append(extension_name)
 			else:
-				await bot.say("The cog, `{}` has already been loaded!\r\nUse !reload to reload the cogs.".format(extension_name))
+				await bot.say("The cog, `{}` has already been loaded!\nUse !reload to reload the cogs.".format(extension_name))
 		except Exception as e:
 			await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
 			print(colors.cred)
@@ -118,8 +118,8 @@ async def reload(ctx):
 async def show_cogs(ctx):
 	"""Shows a list of loaded cogs."""
 	if pingbot.is_bot_admin(ctx) == True:
-		await bot.say("Default cogs (`{}`):\r\n`{}`".format(len(startup_cogs), '\r\n'.join(startup_cogs)))
-		await bot.say("Recently loaded cogs ({}):\r\n{}".format(len(last_loaded), '\r\n'.join(last_loaded)))
+		await bot.say("Default cogs (`{}`):\n`{}`".format(len(startup_cogs), '\n'.join(startup_cogs)))
+		await bot.say("Recently loaded cogs ({}):\n{}".format(len(last_loaded), '\n'.join(last_loaded)))
 
 @bot.command(pass_context=True, hidden=True)
 async def announce(ctx, *, string : str):
@@ -231,8 +231,8 @@ async def on_message(msg):
 				if user.status == user.status.offline:
 					server = msg.server
 					channel = msg.channel
-					await bot.send_message(msg.channel, "`{}` is currently offline!\r\nYour message has been sent via PM.".format(user.name))
-					await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\r\n\r\n{}".format(msg.author.name, server, channel, msg.content))
+					await bot.send_message(msg.channel, "`{}` is currently offline!\nYour message has been sent via PM.".format(user.name))
+					await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\n\n{}".format(msg.author.name, server, channel, msg.content))
 
 	await bot.process_commands(msg)
 
@@ -250,13 +250,13 @@ async def on_member_join(member):
 				with open('./core/docs/welcome/0.txt','r') as welcome_file:
 					welcome = welcome_file.read()
 			await bot.send_typing(server)
-			await bot.send_message(server, "Welcome {} to {}!\r\n{}".format(member.mention, server.name, welcome))
+			await bot.send_message(server, "Welcome {} to {}!\n{}".format(member.mention, server.name, welcome))
 
 @bot.event
 async def on_message_delete(msg):
 	if enable_delete_msg == True:
 		if msg.server.id not in no_delete: #if the server is not equal to any of the servers above, then enable the on_message_delete feature.
-			await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\r\n`{0.content}`".format(msg))
+			await bot.send_message(msg.channel, "`{0.author.name}` deleted the message:\n`{0.content}`".format(msg))
 
 #-----------------------------
 
