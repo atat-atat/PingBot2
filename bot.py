@@ -109,10 +109,6 @@ async def reload(ctx):
 			pingbot.reset(ctx, startup_cogs, last_loaded)
 		except:
 			await bot.say("Something went wrong!")
-		if pingbot.reset(ctx) == True:
-			await bot.say("Successfully reloaded!")
-		else:
-			await bot.say("Failed to reload!")
 
 @bot.command(pass_context=True, hidden=True)
 async def show_cogs(ctx):
