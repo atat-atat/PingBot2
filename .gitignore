@@ -1,4 +1,3 @@
-core/pingbot.py
 core/__pycache__
 core/commands/__pycache__
 bot.bat

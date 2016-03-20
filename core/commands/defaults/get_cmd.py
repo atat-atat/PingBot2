@@ -1,28 +1,22 @@
 import discord
 from discord.ext import commands
-from core.osu import osu
-from core.config import ConfigLoader
-from core.wunderground import WundergroundAPI
-from core.updater import Updater
+from core.pingbot import PingbotCore
 
 import urllib
 from urllib.request import urlopen
 import json
 
-o = osu()
-c = ConfigLoader()
-w = WundergroundAPI()
-u = Updater()
+pingbot = PingbotCore()
 
 class GetInfo():
 	def __init__(self, bot):
 		self.bot = bot
-		self.password = c.load(False, 'password')
-		self.allow_bot_changes = c.load(False, 'user_bot_changes')
-		self.no_perm_msg = c.load(False, 'no_perm_msg')
-		self.no_user_found = c.load(False, 'no_user_found')
-		self.enable_osu = c.load(False, 'enable_osu')
-		self.enable_wunderground = c.load(False, 'enable_wunderground')
+		self.password = pingbot.config_load(False, 'password')
+		self.allow_bot_changes = pingbot.config_load(False, 'user_bot_changes')
+		self.no_perm_msg = pingbot.config_load(False, 'no_perm_msg')
+		self.no_user_found = pingbot.config_load(False, 'no_user_found')
+		self.enable_osu = pingbot.config_load(False, 'enable_osu')
+		self.enable_wunderground = pingbot.config_load(False, 'enable_wunderground')
 
 	@commands.command(pass_context=True)
 	async def join_date(self, ctx, member : discord.Member=None):
@@ -107,41 +101,41 @@ class GetInfo():
 			osu_key = c.load(False, 'osu_key')
 			o.set_key(osu_key)
 
-			user_id = o.get_user(_username, 'user_id')
-			username = o.get_user(_username, 'username')
-			count300 = o.get_user(_username, 'count300')
-			count100 = o.get_user(_username, 'count100')
-			count50 = o.get_user(_username, 'count50')
-			playcount = o.get_user(_username, 'playcount')
-			ranked_score = o.get_user(_username, 'ranked_score')
-			total_score = o.get_user(_username, 'total_score')
-			level = o.get_user(_username, 'level')
-			pp_raw = o.get_user(_username, 'pp_raw')
-			accuracy = o.get_user(_username, 'accuracy')
-			count_rank_ss = o.get_user(_username, 'count_rank_ss')
-			count_rank_s = o.get_user(_username, 'count_rank_s')
-			count_rank_a = o.get_user(_username, 'count_rank_a')
-			country = o.get_user(_username, 'country')
-			pp_country_rank = o.get_user(_username, 'pp_country_rank')
+			user_id = pingbot.osu_get_user(_username, 'user_id')
+			username = pingbot.osu_get_user(_username, 'username')
+			count300 = pingbot.osu_get_user(_username, 'count300')
+			count100 = pingbot.osu_get_user(_username, 'count100')
+			count50 = pingbot.osu_get_user(_username, 'count50')
+			playcount = pingbot.osu_get_user(_username, 'playcount')
+			ranked_score = pingbot.osu_get_user(_username, 'ranked_score')
+			total_score = pingbot.osu_get_user(_username, 'total_score')
+			level = pingbot.osu_get_user(_username, 'level')
+			pp_raw = pingbot.osu_get_user(_username, 'pp_raw')
+			accuracy = pingbot.osu_get_user(_username, 'accuracy')
+			count_rank_ss = pingbot.osu_get_user(_username, 'count_rank_ss')
+			count_rank_s = pingbot.osu_get_user(_username, 'count_rank_s')
+			count_rank_a = pingbot.osu_get_user(_username, 'count_rank_a')
+			country = pingbot.osu_get_user(_username, 'country')
+			pp_country_rank = pingbot.osu_get_user(_username, 'pp_country_rank')
 			await self.bot.say("```User: {} ({})\r\nAccuracy: {}\r\nLevel: {}\r\nPlaycount: {}\r\nCountry: {}\r\nPP: {} (#{})\r\n(300: {} | 100: {} | 50: {})\r\n(SS: {} | S: {} | A: {})```".format(username, user_id, accuracy, level, playcount, country, pp_raw, pp_country_rank, count300, count100, count50, count_rank_ss, count_rank_s, count_rank_a))
 
 	@commands.command()
 	async def weather(self, zip_code : str):
 		if self.enable_wunderground == True:
-			wunderground_key = c.load(False, 'wunderground_key')
-			w.set_key(wunderground_key)
+			wunderground_key = pingbot.config_load(False, 'wunderground_key')
+			pingbot.wunderground_set_key(wunderground_key)
 
-			location = w.weather_get(zip_code, 'city', get_location=True)
-			icon_url = w.weather_get(zip_code, 'icon_url')
-			weather = w.weather_get(zip_code, 'weather')
-			temperature_string = w.weather_get(zip_code, 'temperature_string')
-			dewpoint_string = w.weather_get(zip_code, 'dewpoint_string')
-			feelslike_string = w.weather_get(zip_code, 'feelslike_string')
-			relative_humidity = w.weather_get(zip_code, 'relative_humidity')
-			wind_string = w.weather_get(zip_code, 'wind_string')
-			wind_mph = w.weather_get(zip_code, 'wind_mph')
-			wind_degrees = w.weather_get(zip_code, 'wind_degrees')
-			observation_time = w.weather_get(zip_code, 'observation_time')
+			location = pingbot.wunderground_weather_get(zip_code, 'city', get_location=True)
+			icon_url = pingbot.wunderground_weather_get(zip_code, 'icon_url')
+			weather = pingbot.wunderground_weather_get(zip_code, 'weather')
+			temperature_string = pingbot.wunderground_weather_get(zip_code, 'temperature_string')
+			dewpoint_string = pingbot.wunderground_weather_get(zip_code, 'dewpoint_string')
+			feelslike_string = pingbot.wunderground_weather_get(zip_code, 'feelslike_string')
+			relative_humidity = pingbot.wunderground_weather_get(zip_code, 'relative_humidity')
+			wind_string = pingbot.wunderground_weather_get(zip_code, 'wind_string')
+			wind_mph = pingbot.wunderground_weather_get(zip_code, 'wind_mph')
+			wind_degrees = pingbot.wunderground_weather_get(zip_code, 'wind_degrees')
+			observation_time = pingbot.wunderground_weather_get(zip_code, 'observation_time')
 
 			await self.bot.say("```{}\r\nTemperature: {}\r\nDewpoint: {}\r\nFeelslike temperature: {}\r\nRelative humidity: {}\r\nWind direction: {}\r\nWind MPH: {}\r\nWind degrees: {}\r\n(Observation time: {})```\r\n{}".format(location, temperature_string, dewpoint_string, feelslike_string, relative_humidity, wind_string, wind_mph, wind_degrees, observation_time, icon_url))
 

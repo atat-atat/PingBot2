@@ -1,4 +1,5 @@
 from core.config import ConfigLoader
+import configparser
 from PIL import Image, ImageFont, ImageDraw
 import json
 

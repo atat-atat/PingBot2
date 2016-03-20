@@ -1,21 +1,19 @@
 import discord
 from discord.ext import commands
-from core.config import ConfigLoader
-from core.util import Util
+from core.pingbot import PingbotCore
 
-c = ConfigLoader()
-util = Util()
+pingbot = PingbotCore()
 
 class AdminTools():
 	def __init__(self, bot):
 		self.bot = bot
-		self.no_kick_perm = c.load(False, 'no_kick_perm')
-		self.kick_forbidden = c.load(False, 'kick_forbidden')
-		self.kick_success = c.load(False, 'kick_success')
-		self.no_ban_perm = c.load(False, 'no_ban_perm')
-		self.ban_forbidden = c.load(False, 'ban_forbidden')
-		self.ban_success = c.load(False, 'ban_success')
-		self.no_command_pm = c.load(False, 'no_command_pm')
+		self.no_kick_perm = pingbot.config_load(False, 'no_kick_perm')
+		self.kick_forbidden = pingbot.config_load(False, 'kick_forbidden')
+		self.kick_success = pingbot.config_load(False, 'kick_success')
+		self.no_ban_perm = pingbot.config_load(False, 'no_ban_perm')
+		self.ban_forbidden = pingbot.config_load(False, 'ban_forbidden')
+		self.ban_success = pingbot.config_load(False, 'ban_success')
+		self.no_command_pm = pingbot.config_load(False, 'no_command_pm')
 
 	@commands.command(pass_context=True)
 	async def kick(self, ctx, member : discord.Member):
@@ -26,7 +24,7 @@ class AdminTools():
 			if ctx.message.channel.is_private:
 				await self.bot.say(self.no_command_pm)
 			else:
-				if util.is_owner(ctx) == True:
+				if pingbot.is_owner(ctx) == True:
 					await self.bot.kick(member)
 					await self.bot.say(self.kick_success)
 				else:
@@ -43,7 +41,7 @@ class AdminTools():
 			if ctx.message.channel.is_private:
 				await self.bot.say(self.no_command_pm)
 			else:
-				if util.is_owner(ctx) == True:
+				if pingbot.is_owner(ctx) == True:
 					await self.bot.ban(member, 0)
 					await self.bot.say(self.ban_success)
 				else:

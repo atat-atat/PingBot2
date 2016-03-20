@@ -1,29 +1,29 @@
 import discord
 from discord.ext import commands
 import os
-from core.config import ConfigLoader
 import configparser
+from core.pingbot import PingbotCore
 
-c = ConfigLoader()
+pingbot = PingbotCore()
 
 #Most of these commands are experimental.
 class Commands():
     def __init__(self, bot):
         self.bot = bot
-        self.email = c.load(False, 'email')
-        self.password = c.load(False, 'password')
-        self.allow_bot_changes = c.load(False, 'user_bot_changes')
-        self.original_name = c.load(False, 'bot_name')
-        self.no_perm_msg = c.load(False, 'no_perm_msg')
-        self.only_owner = c.load(False, 'only_owner')
-        self.annoyed = c.load(False, 'annoyed')
-        self.no_kick_perm = c.load(False, 'no_kick_perm')
-        self.kick_forbidden = c.load(False, 'kick_forbidden')
-        self.kick_success = c.load(False, 'kick_success')
-        self.no_command_pm = c.load(False, 'no_command_pm')
-        self.no_user_found = c.load(False, 'no_user_found')
-        self.admins = c.load(False, 'admins')
-        self.enable_welcome_msg = c.load(False, 'enable_welcome_msg')
+        self.email = pingbot.config_load(False, 'email')
+        self.password = pingbot.config_load(False, 'password')
+        self.allow_bot_changes = pingbot.config_load(False, 'user_bot_changes')
+        self.original_name = pingbot.config_load(False, 'bot_name')
+        self.no_perm_msg = pingbot.config_load(False, 'no_perm_msg')
+        self.only_owner = pingbot.config_load(False, 'only_owner')
+        self.annoyed = pingbot.config_load(False, 'annoyed')
+        self.no_kick_perm = pingbot.config_load(False, 'no_kick_perm')
+        self.kick_forbidden = pingbot.config_load(False, 'kick_forbidden')
+        self.kick_success = pingbot.config_load(False, 'kick_success')
+        self.no_command_pm = pingbot.config_load(False, 'no_command_pm')
+        self.no_user_found = pingbot.config_load(False, 'no_user_found')
+        self.admins = pingbot.config_load(False, 'admins')
+        self.enable_welcome_msg = pingbot.config_load(False, 'enable_welcome_msg')
         self.note_options = ['add', 'list', 'edit']
 
     @commands.command()
@@ -41,9 +41,9 @@ class Commands():
         """
         Makes the bot say something.
         """
-        banned_words = c.load(False, 'banned_say_words')
+        banned_words = pingbot.config_load(False, 'banned_say_words')
 
-        no_say = c.load(False, 'no_say')
+        no_say = pingbot.config_load(False, 'no_say')
 
         if ctx.message.server.id not in no_say:
             if any(word in string for word in banned_words):
@@ -104,7 +104,7 @@ class Commands():
             rl_name = name + " :("
             name_l = len(rl_name)
             name_length = int(128/name_l*4/3)
-            image = util.manipulate_text(rl_name, name_length, 58, 149, 'rip', 'comic.ttf')
+            image = pingbot.manipulate_text(rl_name, name_length, 58, 149, 'rip', 'comic.ttf')
             await self.bot.send_file(ctx.message.channel, image)
 
     @commands.command()
@@ -146,22 +146,22 @@ class Commands():
                 await self.bot.type()
                 await self.bot.say("Successfully edited note!")
 
-    async def on_message(self, msg):
-        if msg.content == "F":
-            await self.bot.send_message(msg.channel, "You have paid respects.")
+    @commands.command(pass_context=True)
+    async def welcome_edit(self, ctx, welcome_info : str):
+        msg = ctx.message
+        if self.enable_welcome_msg == True:
+            if pingbot.is_owner(ctx) == True or pingbot.is_bot_admin(ctx) == True:
+                with open('./core/docs/welcome/' + msg.server.id + '.txt', 'w') as welcome_file:
+                    welcome_file.write(welcome_info)
+                await self.bot.say("Successfully modified server welcome message!")
+            else:
+                await self.bot.say(self.only_owner)
 
-            #edit the welcome message of a server.
-        if msg.content.startswith('!welcome_edit'):
-            if self.enable_welcome_msg == True:
-                if msg.author.id == msg.server.owner.id or msg.author.id in admins:
-                    servw = msg.content[len("!welcome_edit "):].strip()
-                    with open('./core/docs/welcome/' + msg.server.id + '.txt', 'w') as welcome_file:
-                        welcome_file.write(servw)
-                    await bot.send_message(msg.channel, "Successfully modified server welcome message!")
-                else:
-                    await bot.send_message(msg.channel, only_owner)
+    async def message_listener(self, msg):
+        if msg.content == "F" or msg.content == "f":
+            await self.bot.send_message(msg.channel, "You have paid respects.")
 
 def setup(bot):
     n = Commands(bot)
-    bot.add_listener(n.on_message, 'on_message')
+    bot.add_listener(n.message_listener, 'on_message')
     bot.add_cog(Commands(bot))

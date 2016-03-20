@@ -2,11 +2,10 @@ import discord
 from discord.ext import commands
 import wikipedia
 import cleverbot
-from core.search import Search, Div
+from core.pingbot import PingbotCore
 
 cb1 = cleverbot.Cleverbot()
-s = Search()
-d = Div()
+pingbot = PingbotCore()
 
 class Commands():
     def __init__(self, bot):
@@ -15,22 +14,22 @@ class Commands():
     @commands.command()
     async def google(self, *, search_string : str):
         """Searches Google."""
-        await self.bot.say(s.search('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&', search_string))
+        await self.bot.say(pingbot.search_standard('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&', search_string))
 
     @commands.command()
     async def youtube(self, *, search_string : str):
-        """Searches YouTube."""
-        await self.bot.say(s.search('https://ajax.googleapis.com/ajax/services/search/video?v=1.0&', search_string))
+        """Searches YouTube. (MAY BE DEPRECATED)"""
+        await self.bot.say(pingbot.search_youtube(search_string))
 
     @commands.command()
     async def urban(self, *, search_string : str):
         """Searches Urban Dictionary."""
         try:
-            d.div_set_link('http://www.urbandictionary.com/define.php?term=', search_string)
+            pingbot.search_div_set_link('http://www.urbandictionary.com/define.php?term=', search_string)
             await self.bot.say("Showing definition of `{}` from Urban Dictionary.".format(search_string))
-            meaning = d.div_get('meaning')
-            example = d.div_get('example')
-            contributor = d.div_get('contributor')
+            meaning = pingbot.search_div_get('meaning')
+            example = pingbot.search_div_get('example')
+            contributor = pingbot.search_div_get('contributor')
             await self.bot.say("{}\r\n\r\n**Example -**\r\n{}\r\nContributor-\r\n{}".format(meaning, example, contributor))
         except AttributeError:
             await self.bot.say("Could not find a definition for that word.")

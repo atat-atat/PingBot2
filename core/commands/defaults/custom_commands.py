@@ -1,20 +1,18 @@
 from discord.ext import commands
-from core.config import ConfigLoader
-from core.util import Util
+from core.pingbot import PingbotCore
 
-c = ConfigLoader()
-util = Util()
+pingbot = PingbotCore()
 
 class CustomComm():
 	def __init__(self, bot):
 		self.bot = bot
-		self.enable_custom_commands = c.load(False, 'enable_custom_commands')
+		self.enable_custom_commands = pingbot.config_load(False, 'enable_custom_commands')
 
 	@commands.command()
 	async def command_add(self, command : str=None, *, value : str=None):
 		if self.enable_custom_commands == True:
 			if command != None and value != None:
-				util.add_command(command, value)
+				pingbot.add_command(command, value)
 				await self.bot.say("Successfully added command!")
 			elif command == None:
 				await self.bot.say("You must provide the command name.")

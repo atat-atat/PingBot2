@@ -1,12 +1,8 @@
 """
 PingBot2; a bot for Discord made using Discord.py, made by Oppy/@@.
 """
-from core.config import ConfigLoader
+from core.pingbot import PingbotCore
 from core.colors import colors
-from core.errors import ErrorsManager
-from core.logs import LogManager
-from core.updater import Updater
-from core.util import Util
 
 from discord.ext import commands
 import asyncio
@@ -16,43 +12,39 @@ import os
 import logging
 import discord
 
-l = LogManager()
-e = ErrorsManager()
-c = ConfigLoader()
-u = Updater()
-util = Util()
+pingbot = PingbotCore()
 bot = discord.Client()
 
-u.check_updates('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0')
+pingbot.update_check('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0')
 
-sys_version = c.load(True, 'sys_version')
-bot_name = c.load(False, 'bot_name')
-email = c.load(False, 'email')
-password = c.load(False, 'password')
-cmd_prefix = c.load(False, 'prefix')
-pm_help = c.load(False, 'pm_help')
-bot_description = c.load(False, 'description')
-enable_delete_msg = c.load(False, 'enable_delete_msg')
-enable_welcome_msg = c.load(False, 'enable_welcome_msg')
-enable_offline_messenger = c.load(False, 'enable_offline_messenger')
-enable_random_names = c.load(False, 'enable_random_names')
-enable_custom_commands = c.load(False, 'enable_custom_commands')
-startup_cogs = c.load(False, 'startup_cogs')
-banned_say_words = c.load(False, 'banned_say_words')
+sys_version = pingbot.config_load(True, 'sys_version')
+bot_name = pingbot.config_load(False, 'bot_name')
+email = pingbot.config_load(False, 'email')
+password = pingbot.config_load(False, 'password')
+cmd_prefix = pingbot.config_load(False, 'prefix')
+pm_help = pingbot.config_load(False, 'pm_help')
+bot_description = pingbot.config_load(False, 'description')
+enable_delete_msg = pingbot.config_load(False, 'enable_delete_msg')
+enable_welcome_msg = pingbot.config_load(False, 'enable_welcome_msg')
+enable_offline_messenger = pingbot.config_load(False, 'enable_offline_messenger')
+enable_random_names = pingbot.config_load(False, 'enable_random_names')
+enable_custom_commands = pingbot.config_load(False, 'enable_custom_commands')
+startup_cogs = pingbot.config_load(False, 'startup_cogs')
+banned_say_words = pingbot.config_load(False, 'banned_say_words')
 
-no_perm_msg = c.load(False, 'no_perm_msg')
-only_owner = c.load(False, 'only_owner')
-annoyed = c.load(False, 'annoyed')
-invalid_invite = c.load(False, 'invalid_invite_link')
+no_perm_msg = pingbot.config_load(False, 'no_perm_msg')
+only_owner = pingbot.config_load(False, 'only_owner')
+annoyed = pingbot.config_load(False, 'annoyed')
+invalid_invite = pingbot.config_load(False, 'invalid_invite_link')
 
-admins = c.load(False, 'admins')
-no_delete = c.load(False, 'no_delete')
-no_say = c.load(False, 'no_say')
-no_welcome = c.load(False, 'no_welcome')
+admins = pingbot.config_load(False, 'admins')
+no_delete = pingbot.config_load(False, 'no_delete')
+no_say = pingbot.config_load(False, 'no_say')
+no_welcome = pingbot.config_load(False, 'no_welcome')
 
 bot = commands.Bot(command_prefix=cmd_prefix, description=bot_description, pm_help=pm_help)
 
-bot_version = c.load(True, 'sys_version')
+bot_version = pingbot.config_load(True, 'sys_version')
 
 last_loaded = [] #last loaded cog(s)
 
@@ -72,7 +64,7 @@ logger.addHandler(handler)
 @bot.command(pass_context=True, hidden=True)
 async def load(ctx, extension_name : str):
 	"""Loads an extension."""
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		try:
 			if extension_name in sys.modules:
 				bot.load_extension(extension_name)
@@ -98,7 +90,7 @@ async def load(ctx, extension_name : str):
 @bot.command(pass_context=True, hidden=True)
 async def unload(ctx, extension_name : str):
 	"""Unloads an extension."""
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		if extension_name in sys.modules:
 			if extension_name in last_loaded:
 				last_loaded.remove(extension_name)
@@ -112,12 +104,12 @@ async def unload(ctx, extension_name : str):
 @bot.command(pass_context=True, hidden=True)
 async def reload(ctx):
 	"""Reloads all loaded extensions"""
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		try:
-			util.reset(ctx, startup_cogs, last_loaded)
+			pingbot.reset(ctx, startup_cogs, last_loaded)
 		except:
 			await bot.say("Something went wrong!")
-		if util.reset(ctx) == True:
+		if pingbot.reset(ctx) == True:
 			await bot.say("Successfully reloaded!")
 		else:
 			await bot.say("Failed to reload!")
@@ -125,18 +117,14 @@ async def reload(ctx):
 @bot.command(pass_context=True, hidden=True)
 async def show_cogs(ctx):
 	"""Shows a list of loaded cogs."""
-	if util.is_bot_admin(ctx) == True:
-		await bot.say("Default command sets:")
-		for i in startup_cogs:
-			await bot.say("`{}`".format(i))
-		await bot.say("Recently loaded sets:")
-		for i in last_loaded:
-			await bot.say("`{}`".format(i))
+	if pingbot.is_bot_admin(ctx) == True:
+		await bot.say("Default cogs (`{}`):\r\n`{}`".format(len(startup_cogs), '\r\n'.join(startup_cogs)))
+		await bot.say("Recently loaded cogs ({}):\r\n{}".format(len(last_loaded), '\r\n'.join(last_loaded)))
 
 @bot.command(pass_context=True, hidden=True)
 async def announce(ctx, *, string : str):
 	"""Sends this message to all servers the bot is currently connected to."""
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		if any(word in string for word in banned_say_words):
 			await bot.say(annoyed)
 		else:
@@ -147,9 +135,9 @@ async def announce(ctx, *, string : str):
 
 @bot.command(pass_context=True, hidden=True)
 async def set_show(ctx, option : str):
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		if "password" not in option:
-			setting = c.load(False, option)
+			setting = pingbot.config_load(False, option)
 			if setting != None:
 				await bot.say("`{}` is set to `{}`".format(option, setting))
 			else:
@@ -162,18 +150,18 @@ async def set_show(ctx, option : str):
 @bot.command(pass_context=True, hidden=True)
 async def servers(ctx):
 	"""Returns all servers the bot is currently connected to."""
-	if util.is_bot_admin(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True:
 		servers = len(bot.servers)
-		for i in bot.servers:
-			await bot.say("`{}` : `{}`" .format(i.name, i.id))
 		await bot.say("Currently connected to `%s` server(s)." % servers)
+		for i in bot.servers:
+			await bot.send_message(ctx.message.author, "`{}` : `{}`".format(i.name, i.id))
 	else:
 		await bot.say(no_perm_msg)
 
 @bot.command()
 async def version():
-	real_version = u.download_value('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0', 'real_version', './core/sys/realver.json')
-	u.delete_file('./core/sys/realver.json')
+	real_version = pingbot.value_download('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0', 'real_version', './core/sys/realver.json')
+	pingbot.file_delete('./core/sys/realver.json')
 	await bot.say("The currently installed PingBot version is, `{}` (Latest: `{}`)".format(bot_version, real_version))
 
 @bot.command()
@@ -185,7 +173,7 @@ async def join(url : str):
 
 @bot.command(pass_context=True)
 async def leave(ctx):
-	if util.is_bot_admin(ctx) == True or util.is_owner(ctx) == True:
+	if pingbot.is_bot_admin(ctx) == True or pingbot.is_owner(ctx) == True:
 		await bot.leave_server(ctx.message.server)
 	else:
 		await bot.say(only_owner)
@@ -214,7 +202,7 @@ async def on_ready():
 	for i in startup_cogs:
 		bot.load_extension(i)
 
-	games = c.load(False, 'games')
+	games = pingbot.config_load(False, 'games')
 	await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 
 	title = bot.user.name #Set command prompt window caption to bot name
@@ -232,7 +220,7 @@ async def on_message(msg):
 
 	if enable_custom_commands == True:
 		if msg.content.startswith(cmd_prefix):
-			command = util.custom_command(msg.content)
+			command = pingbot.custom_command(msg.content)
 			if command != None:
 				await bot.send_message(msg.channel, command)
 
@@ -276,7 +264,7 @@ async def on_message_delete(msg):
 async def random_game():
 	await bot.wait_until_ready()
 	while not bot.is_closed:
-		games = c.load(False, 'games')
+		games = pingbot.config_load(False, 'games')
 		await bot.change_status(discord.Game(name="{}".format(random.choice(games)),idle=None))
 		await asyncio.sleep(100)
 
