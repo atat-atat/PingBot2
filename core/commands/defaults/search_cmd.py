@@ -18,7 +18,8 @@ class Commands():
 
     @commands.command()
     async def youtube(self, *, search_string : str):
-        """Searches YouTube. (MAY BE DEPRECATED)"""
+        """Searches YouTube."""
+        await self.bot.say("*Searching for {}...*".format(search_string))
         await self.bot.say(pingbot.search_youtube(search_string))
 
     @commands.command()

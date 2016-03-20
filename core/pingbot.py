@@ -50,8 +50,8 @@ class PingbotCore:
 	def is_bot_admin(self, ctx):
 		return util.is_bot_admin(ctx)
 
-	def reset(self, ctx, cog_list, last_loaded_cog):
-		return util.reset(ctx, cog_list, last_loaded_cog)
+	def reset(self, bot, ctx, cog_list, last_loaded_cog):
+		return util.reset(bot, ctx, cog_list, last_loaded_cog)
 
 	def wunderground_set_key(self, key):
 		wunderground.set_key(key)

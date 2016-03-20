@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 import configparser
 from core.pingbot import PingbotCore
+import urllib
 
 pingbot = PingbotCore()
 
@@ -10,6 +11,7 @@ pingbot = PingbotCore()
 class Commands():
     def __init__(self, bot):
         self.bot = bot
+        self.username = pingbot.config_load(False, 'bot_name')
         self.email = pingbot.config_load(False, 'email')
         self.password = pingbot.config_load(False, 'password')
         self.allow_bot_changes = pingbot.config_load(False, 'user_bot_changes')
@@ -72,14 +74,80 @@ class Commands():
         Changes the bots name.
         """
         if self.allow_bot_changes == False:
-            if ctx.message.author.id in self.admins:
+            if pingbot.is_bot_admin(ctx):
                 await self.bot.edit_profile(password=self.password, username=bot_name)
                 await self.bot.say("PingBot has turned into a `{}`".format(bot_name))
             else:
-                await self.bot.say(no_perm_msg)
+                await self.bot.say(self.no_perm_msg)
         else:
             await self.bot.edit_profile(password=self.password, username=bot_name)
             await self.bot.say("PingBot has turned into a `{}`".format(bot_name))
+
+    @commands.command(pass_context=True)
+    async def change_avatar(self, ctx, image_url : str):
+        """
+        Changes the bots avatar.
+        """
+        if self.allow_bot_changes == False:
+            if pingbot.is_bot_admin(ctx):
+                try:
+                    pingbot.retrieve_url(image_url, 'icon_dl.png')
+                    with open('./core/sys/cache/icon_dl.png', 'rb') as avatar_file:
+                        avatar = avatar_file.read()
+                    await self.bot.edit_profile(password=self.password, avatar=avatar)
+                    await self.bot.say("PingBot has changed its avatar to `{}`".format(image_url))
+                except urllib.error.HTTPError:
+                    await self.bot.say("`403: Forbidden` error occurred.\n(For now, blame the jews.)")
+            else:
+                await self.bot.say(self.no_perm_msg)
+        else:
+            try:
+                pingbot.retrieve_url(image_url, 'icon_dl.png')
+                with open('./core/sys/cache/icon_dl.png', 'rb') as avatar_file:
+                    avatar = avatar_file.read()
+                await self.bot.edit_profile(password=self.password, avatar=avatar)
+                await self.bot.say("PingBot has changed its avatar to `{}`".format(image_url))
+            except urllib.error.HTTPError:
+                await self.bot.say("`403: Forbidden` error occurred.\n(For now, blame the jews.)")
+
+    @commands.command(pass_context=True)
+    async def change_avatarorig(self, ctx):
+        """
+        Changes the bot's avatar back to the original avatar.
+        """
+        if self.allow_bot_changes == False:
+            if pingbot.is_bot_admin(ctx):
+                with open('./core/images/icon.png', 'rb') as avatar_file:
+                    avatar = avatar_file.read()
+                await self.bot.edit_profile(password=self.password, avatar=avatar)
+                await self.bot.say("PingBot has changed its avatar back to the original.")
+            else:
+                await self.bot.say(self.no_perm_msg)
+        else:
+            with open('./core/images/icon.png', 'rb') as avatar_file:
+                avatar = avatar_file.read()
+            await self.bot.edit_profile(password=self.password, avatar=avatar)
+            await self.bot.say("PingBot has changed its avatar back to the original.")
+
+    @commands.command(pass_context=True)
+    async def change_orig(self, ctx):
+        """
+        Changes some of the bots information back to original.
+        """
+        if self.allow_bot_changes == False:
+            if pingbot.is_bot_admin(ctx):
+                with open('./core/images/icon.png', 'rb') as avatar_file:
+                    avatar = avatar_file.read()
+                await self.bot.edit_profile(password=self.password, username=self.username, avatar=avatar)
+                await self.bot.say("Returned information back to original.")
+            else:
+                await self.bot.say(self.no_perm_msg)
+        else:
+            with open('./core/images/icon.png', 'rb') as avatar_file:
+                avatar = avatar_file.read()
+            await self.bot.edit_profile(password=self.password, username=self.username, avatar=avatar)
+            await self.bot.say("Returned information back to original.")
+
 
     @commands.command(pass_context=True)
     async def change_nameorig(self, ctx):
@@ -91,7 +159,7 @@ class Commands():
                 await self.bot.edit_profile(password=self.password, username=self.original_name)
                 await self.bot.say("PingBot has returned to its original form.")
             else:
-                await self.bot.say(no_perm_msg)
+                await self.bot.say(self.no_perm_msg)
         else:
             await self.bot.edit_profile(password=self.password, username=self.original_name)
             await self.bot.say("PingBot has returned to its original form.")

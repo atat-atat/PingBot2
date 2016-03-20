@@ -106,7 +106,8 @@ async def reload(ctx):
 	"""Reloads all loaded extensions"""
 	if pingbot.is_bot_admin(ctx) == True:
 		try:
-			pingbot.reset(ctx, startup_cogs, last_loaded)
+			pingbot.reset(bot, ctx, startup_cogs, last_loaded)
+			await bot.say("Successfully reloaded cogs.")
 		except Exception as e:
 			await bot.say("Something went wrong!")
 			print(colors.cred+str(e)+colors.cwhite)
@@ -181,9 +182,9 @@ async def leave(ctx):
 #display information when the bot is ready.
 @bot.event
 async def on_ready():
-	with open('./core/images/icon.png', 'rb') as avatar_file:
-		avatar = avatar_file.read()
-	await bot.edit_profile(password=password, username=bot_name, avatar=avatar)
+	#with open('./core/images/icon.png', 'rb') as avatar_file:
+		#avatar = avatar_file.read()
+	#await bot.edit_profile(password=password, username=bot_name, avatar=avatar)
 	print(colors.cgreen+"Successfully loaded PingBot!")
 	print("Currently running version; %s" % colors.bwhite+colors.cblue+sys_version+colors.bblack+colors.cgreen)
 	print("--------------------------------------")
