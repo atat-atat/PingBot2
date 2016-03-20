@@ -1,0 +1,3 @@
+asame >= 1.0
+Asame >= 1.0
+and_Asame = 1.4
