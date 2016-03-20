@@ -43,6 +43,7 @@ banned_say_words = c.load(False, 'banned_say_words')
 no_perm_msg = c.load(False, 'no_perm_msg')
 only_owner = c.load(False, 'only_owner')
 annoyed = c.load(False, 'annoyed')
+invalid_invite = c.load(False, 'invalid_invite_link')
 
 admins = c.load(False, 'admins')
 no_delete = c.load(False, 'no_delete')
@@ -116,7 +117,7 @@ async def reload(ctx):
 			util.reset(ctx, startup_cogs, last_loaded)
 		except:
 			await bot.say("Something went wrong!")
-		if reset(ctx) == True:
+		if util.reset(ctx) == True:
 			await bot.say("Successfully reloaded!")
 		else:
 			await bot.say("Failed to reload!")
@@ -145,9 +146,9 @@ async def announce(ctx, *, string : str):
 		await bot.say(no_perm_msg)
 
 @bot.command(pass_context=True, hidden=True)
-async def set_show(ctx, *, option : str):
+async def set_show(ctx, option : str):
 	if util.is_bot_admin(ctx) == True:
-		if 'password' not in option:
+		if "password" not in option:
 			setting = c.load(False, option)
 			if setting != None:
 				await bot.say("`{}` is set to `{}`".format(option, setting))
@@ -174,6 +175,20 @@ async def version():
 	real_version = u.download_value('https://dl.dropboxusercontent.com/s/1welpdvy23ycyih/realver.json?dl=0', 'real_version', './core/sys/realver.json')
 	u.delete_file('./core/sys/realver.json')
 	await bot.say("The currently installed PingBot version is, `{}` (Latest: `{}`)".format(bot_version, real_version))
+
+@bot.command()
+async def join(url : str):
+	try:
+		await bot.accept_invite(url)
+	except discord.errors.NotFound:
+		await bot.say(invalid_invite)
+
+@bot.command(pass_context=True)
+async def leave(ctx):
+	if util.is_bot_admin(ctx) == True or util.is_owner(ctx) == True:
+		await bot.leave_server(ctx.message.server)
+	else:
+		await bot.say(only_owner)
 
 #-----------------------------
 #Bot events
@@ -210,16 +225,10 @@ async def on_ready():
 
 @bot.event
 async def on_message(msg):
-	if msg.content.startswith("!join"):
-		invite = msg.content[len("!join "):].strip()
-		await bot.accept_invite(invite)
-
-	#leave the server
-	if msg.content.startswith("!leave"):
-		if util.is_bot_admin(ctx) == True or is_owner(ctx) == True:
-			await bot.leave_server(msg.server)
-		else:
-			await bot.say(only_owner)
+	try:
+		print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
+	except UnicodeEncodeError:
+		print("[{}][{}][{}] [Contains Character]".format(msg.server, msg.channel, msg.author))
 
 	if enable_custom_commands == True:
 		if msg.content.startswith(cmd_prefix):
@@ -238,10 +247,6 @@ async def on_message(msg):
 					await bot.send_message(user, "`{}` mentioned you while you were away in the server: {} (#{}).\r\n\r\n{}".format(msg.author.name, server, channel, msg.content))
 
 	await bot.process_commands(msg)
-	try:
-		print("[{}][{}][{}]: {}".format(msg.server, msg.channel, msg.author, msg.content))
-	except UnicodeEncodeError:
-		print("[{}][{}][{}] [Contains Character]".format(msg.server, msg.channel, msg.author))
 
 #welcome message
 @bot.event
