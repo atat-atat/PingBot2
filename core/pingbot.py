@@ -3,7 +3,6 @@ This module simply makes accessing all the scripts easier without having to impo
 """
 from core.config import *
 from core.errors import *
-from core.help import *
 from core.logs import *
 from core.module_check import *
 from core.osu import *
