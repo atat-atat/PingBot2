@@ -46,7 +46,7 @@ class Util:
 
 	def reset(self, ctx, cog_list, last_loaded_cog):
 		if self.is_bot_admin(ctx) == True:
-			for i in command_sets:
+			for i in cog_list:
 				bot.unload_extension(i)
 				bot.load_extension(i)
 			for i in last_loaded:

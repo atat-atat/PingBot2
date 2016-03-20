@@ -107,8 +107,9 @@ async def reload(ctx):
 	if pingbot.is_bot_admin(ctx) == True:
 		try:
 			pingbot.reset(ctx, startup_cogs, last_loaded)
-		except:
+		except Exception as e:
 			await bot.say("Something went wrong!")
+			print(colors.cred+str(e)+colors.cwhite)
 
 @bot.command(pass_context=True, hidden=True)
 async def show_cogs(ctx):
