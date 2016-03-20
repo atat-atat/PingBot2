@@ -24,9 +24,8 @@ def on_ready():
 	print("AsameBot ready!")
 
 @bot.async_event
-def on_message(msg):
+def on_message(self, msg):
 	print("[{}][{}][{}]: {}".format(msg.server.name, msg.channel, msg.author, msg.content))
-
 	if msg.content.startswith('Asame') or msg.content.startswith('asame'):
 		cmd = msg.content.split(" ")
 		if "join" in cmd:
@@ -36,12 +35,20 @@ def on_message(msg):
 				yield from bot.accept_invite(invite_link)
 				yield from bot.send_message(msg.channel, "I have successfully joined the invite url.")
 			except Exception as e:
-				yield from bot.send_message(msg.channel, "I've encountered an error while attempting to join that invite url!")
-				for i in bot_admins:
-					yield from bot.send_message(discord.Object(i), "**Unexpected error has occurred!**\n[Error Occurrence]: `{}` (`{}`) : `{}`, caused by command-author: `{}` (`{}`)\n[Message]: {}\n\n[Error]:\n```{}```".format(msg.server, msg.server.id, msg.channel, msg.author, msg.author.id, msg.content, e))
-		if "leave" in cmd:
-			yield from bot.send_message(msg.channel, "*Good bye.*")
-			yield from bot.leave_server(msg.server)
+				yield from bot.send_message(msg.channel, "I was unable to join that invite url.")
+			if "leave" in cmd:
+				yield from bot.send_message(msg.channel, "*Good bye.*")
+				yield from bot.leave_server(msg.server)
+
+		if msg.channel.is_private:
+			if any(word in cmd for word in asame_cmds):
+				if "show" and "error" in cmd:
+					if self.latest_error != None:
+						yield from bot.send_message(msg.channel, "**Unexpected error has occurred!**\n[Error Occurrence]: `{}` (`{}`) : `{}`, caused by command-author: `{}` (`{}`)\n[Message]: {}\n\n[Error]:\n```{}```".format(msg.server, msg.server.id, msg.channel, msg.author, msg.author.id, msg.content, e))
+					else:
+						yield from bot.send_message(msg.channel, "There have been no errors.")
+			else:
+				yield from bot.send_message("Unknown command!")
 
 	if msg.content.startswith(cmd_prefix + 'join'):
 		invite_link = msg.content[len("join "):].strip()
@@ -53,10 +60,11 @@ def on_message(msg):
 
 loop = asyncio.get_event_loop()
 
+
 try:
-    loop.run_until_complete(bot.login(email, password))
-    loop.run_until_complete(bot.connect())
+	loop.run_until_complete(bot.login(email, password))
+	loop.run_until_complete(bot.connect())
 except Exception:
-    loop.run_until_complete(bot.close())
+	loop.run_until_complete(bot.close())
 finally:
-   loop.close()
+	loop.close()
