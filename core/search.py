@@ -28,9 +28,20 @@ class Search:
 		self.output = h
 		return self.output
 
-	def youtube(self, query_string): #this is here to only clear a strange bug with searching on YouTube
+	def youtube(self, query_string): #just a different method for searching on YouTube
 		query = urllib.parse.quote(query_string)
 		url = "https://www.youtube.com/results?search_query=" + query
+		response = urllib.request.urlopen(url)
+		html = response.read()
+		soup = BeautifulSoup(html, "html.parser")
+		vids = soup.findAll(attrs={'class':'yt-uix-tile-link'})
+		vid = vids[0]
+		video = 'https://www.youtube.com' + vid['href']
+		return video
+
+	def duckduckgo_images(self, query_string):
+		query = urllib.parse.quote(query_string)
+		url = "https://www.duckduckgo.com/?q=" + query + '&iax=1&ia=images'
 		response = urllib.request.urlopen(url)
 		html = response.read()
 		soup = BeautifulSoup(html, "html.parser")
@@ -38,6 +49,7 @@ class Search:
 		vid = random.choice(vids)
 		video = 'https://www.youtube.com' + vid['href']
 		return video
+
 
 class Div:
 	def div_set_link(self, url, query):

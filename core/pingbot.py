@@ -23,17 +23,18 @@ search = Search()
 search_div = Div()
 
 class PingbotCore:
-	def update_check(self, url):
-		updater.check_updates(url)
+	class updater:
+		def update_check(self, url):
+			updater.check_updates(url)
 
-	def value_download(self, url, value, directory):
-		return updater.download_value(url, value, directory)
+		def value_download(self, url, value, directory):
+			return updater.download_value(url, value, directory)
 
-	def file_delete(self, file):
-		updater.delete_file(file)
+		def file_delete(self, file):
+			updater.delete_file(file)
 
-	def retrieve_url(self, input_url, file_name):
-		return updater.url_retrieve(input_url, file_name)
+		def retrieve_url(self, input_url, file_name):
+			return updater.url_retrieve(input_url, file_name)
 
 	def custom_command(self, message):
 		return util.custom_command(message)
@@ -50,8 +51,11 @@ class PingbotCore:
 	def is_bot_admin(self, ctx):
 		return util.is_bot_admin(ctx)
 
-	def reset(self, bot, ctx, cog_list, last_loaded_cog):
-		return util.reset(bot, ctx, cog_list, last_loaded_cog)
+	def reset(self, bot, ctx, cog_dir1, cog_list, last_loaded_cog, cog_dir2, sys_cogs):
+		return util.reset(bot, ctx, cog_dir1, cog_list, last_loaded_cog, cog_dir2, sys_cogs)
+
+	def parse_strings(self, string):
+		return util.parse_strings()
 
 	def wunderground_set_key(self, key):
 		wunderground.set_key(key)
@@ -74,6 +78,12 @@ class PingbotCore:
 	def config_load_real(self, name):
 		return config_m.load_real(name)
 
+	def config_load_direct(self, file_name, name):
+		return config_m.load_direct(file_name, name)
+
+	def config_load_msg(self, name):
+		return config_m.load_msg(name)
+
 	def config_load_ini(self, file_name, section, option):
 		return config_m.load_ini(file_name, section, option)
 
@@ -82,6 +92,8 @@ class PingbotCore:
 
 	def config_save_json(self, sys=False):
 		config_m.save(sys)
+
+	#def config_append_json(self, file_name, name, value)
 
 	def search_for_lib(self, module_name):
 		module_check.search_for_lib(module_name)

@@ -1,0 +1,72 @@
+{
+	"admins" : [
+	"99466732728492032",
+	"102964575992832000"
+	],
+
+	"no_delete": [
+	"102229818308857856"
+	],
+
+	"banned_say_words": [
+	"!say"
+	],
+
+	"no_say": [
+	],
+
+	"no_welcome": [
+	],
+
+	"startup_cogs": [
+	"ascii_art",
+	"copypasta",
+	"memes",
+	"minigames",
+	"pingbot-commands",
+	"roll"
+	],
+
+	"bot_name": "PingBot",
+	"email": "pingbottest@gmail.com",
+	"password": "GE3C4710",
+	"prefix": "!",
+	"pm_help": true,
+	"enable_delete_msg": true,
+	"enable_welcome_msg": true,
+	"enable_offline_messenger": false,
+	"enable_custom_commands": true,
+	"enable_osu": true,
+	"enable_wunderground": true,
+	"random_games": true,
+	"user_bot_changes": true,
+	"enable_mention_message": true,
+	"mm_ifin": false,
+	"description": "I'm a robot!",
+	
+	"irc_host": "irc.quakenet.com",
+	"irc_port": 6667,
+	"irc_channels": [
+	"#pingbot-testing"
+	],
+
+	"games": [
+	"with dinosaurs.",
+	"with heresy.",
+	"chat simulator",
+	"with daddy's tools."
+	],
+	
+	"mention_messages": [
+	"Hello guys this is darkwolf who is now Bloodwolf",
+	"so i wanna talk about how i came to join this clan.",
+	"So the reason why i joined this clan is i was in {EPIC}clan before",
+	"and i met waterstar,decoy in the game and they were really nice and friendly XD",
+	",also another reason is i had too much responsibility",
+	"to handle when i was co owner in {EPIC}clan and i wanted to start as a member",
+	"and get some new experience and that's it XD"
+	],
+
+	"osu_key": "68f750807dd1f522b500003b1a0bd98d06ba7c95",
+	"wunderground_key": "ded90db942aba1c4"
+}

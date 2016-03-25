@@ -30,8 +30,8 @@ class ErrorsManager:
 		cur_time = str(time)
 		if os.path.isfile('errors.log') == True:
 			with open('errors.log', 'a') as error_log:
-				error_log.write(cur_time+"[ERROR:"+error_type+"] "+name+": "+info)
+				error_log.write(cur_time+"[ERROR:1] "+name+": "+info)
 		else:
 			with open('errors.log', 'w') as error_log:
-				error_log.write(cur_time+"[ERROR:"+error_type+"] "+name+": "+info)
+				error_log.write(cur_time+"[ERROR:1] "+name+": "+info)
 		return

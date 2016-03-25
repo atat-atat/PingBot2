@@ -1,0 +1,18 @@
+{
+	"no_perm_msg": "You do not have permission to use that command.",
+	"only_owner": "Only the owner can use that command.",
+	"annoyed": "Nice try.",
+	"no_kick_perm": "You do not have permission to kick users.",
+	"kick_forbidden": "PingBot does not have permission to kick users.",
+	"kick_success": "The bot has successfully kicked user!",
+	"no_ban_perm": "You do not have permission to ban users.",
+	"ban_forbidden": "PingBot does not have permission to ban users.",
+	"ban_success": "Successfully banned user!",
+	"no_command_pm": "You cannot use that command in a PM!",
+	"no_user_found": "Failed to find that user.",
+	"invalid_invite_link.": "Invalid invite link.",
+	"success_command": "Success!",
+	"server_farewell": "Good bye.",
+	"logout": "Good night.",
+	"avatar_rf_change_success": "Changed avatar to recent file."
+}
