@@ -1,1 +1,2 @@
-Type !help for a list of commands, and type !info for the server information.
+Welcome <@{0.id}> to {0.server}!
+Type !help for a list of commands.
