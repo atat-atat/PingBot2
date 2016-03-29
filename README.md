@@ -1,5 +1,5 @@
 ##PingBot2
-PingBot is a Discord.py bot made using Python (discord.py)
+PingBot is a discord.py bot made using Python.
 
 ##Features
 - searches information from the internet (such as Google, YouTube, and Wikipedia,)
