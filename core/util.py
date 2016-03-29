@@ -6,6 +6,8 @@ import json
 c = ConfigLoader()
 
 class Util:
+	def __init__(self):
+		self.commands = []
 
 	def custom_command(self, message):
 		customcommand = message.split('!')[1]
@@ -38,6 +40,9 @@ class Util:
 		else:
 			return False
 
+	#def is_moderator(self, ctx):
+		#if ctx.message
+
 	def is_bot_admin(self, ctx):
 		admins = c.load(False, 'admins')
 		if ctx.message.author.id in admins:
@@ -59,3 +64,13 @@ class Util:
 			return True
 		else:
 			return False
+
+	def init_command(self, command):
+		if command in self.commands:
+			return False
+		else:
+			self.commands.append(command)
+			return True
+
+	def get_commands(self):
+		return self.commands

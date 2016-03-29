@@ -26,11 +26,43 @@ class Commands():
         self.no_kick_perm = pingbot.config_load_msg('no_kick_perm')
         self.kick_forbidden = pingbot.config_load_msg('kick_forbidden')
         self.kick_success = pingbot.config_load_msg('kick_success')
+        self.no_ban_perm = pingbot.config_load_msg('no_ban_perm')
+        self.ban_forbidden = pingbot.config_load_msg('ban_forbidden')
+        self.ban_success = pingbot.config_load_msg('ban_success')
         self.no_command_pm = pingbot.config_load_msg('no_command_pm')
         self.no_user_found = pingbot.config_load_msg('no_user_found')
         self.avatar_change_success = pingbot.config_load_msg('avatar_change_success')
-
-        self.note_options = ['add', 'list', 'edit']
+        self.enable_custom_commands = pingbot.config_load(False, 'enable_custom_commands')
+        pingbot.init_command('evaluate')
+        pingbot.init_command('waifu')
+        pingbot.init_command('whois_waifu')
+        pingbot.init_command('say')
+        pingbot.init_command('chan_say')
+        pingbot.init_command('direct_say')
+        pingbot.init_command('global_say')
+        pingbot.init_command('announce')
+        pingbot.init_command('change_game')
+        pingbot.init_command('change_name')
+        pingbot.init_command('change_nameorig')
+        pingbot.init_command('change_avatar')
+        pingbot.init_command('change_avatarorig')
+        pingbot.init_command('change_orig')
+        pingbot.init_command('rip')
+        pingbot.init_command('notes')
+        pingbot.init_command('quotes')
+        pingbot.init_command('welcome_edit')
+        pingbot.init_command('whichone')
+        pingbot.init_command('pm')
+        pingbot.init_command('mention')
+        pingbot.init_command('add_command')
+        pingbot.init_command('role_test')
+        pingbot.init_command('kick')
+        pingbot.init_command('ban')
+        pingbot.init_command('google')
+        pingbot.init_command('youtube')
+        pingbot.init_command('urban')
+        pingbot.init_command('wiki')
+        pingbot.init_command('clever')
 
     @commands.command(hidden=True)
     async def evaluate(self, *, eval_value : str=None):
@@ -118,6 +150,37 @@ class Commands():
             await self.bot.say("Sending message to `{}`".format(user.name))
             await self.bot.send_message(user, message)
 
+    @commands.command(pass_context=True, hidden=True)
+    async def global_say(self, ctx, *, string : str):
+        """Sends this message to all servers the bot is currently connected to."""
+        banned_words = pingbot.config_load(False, 'banned_say_words')
+        if pingbot.is_bot_admin(ctx) == True:
+            if any(word in string for word in banned_words):
+                await self.bot.say(annoyed)
+            else:
+                for i in self.bot.servers:
+                    await self.bot.send_message(i, string) #bot.say(string)
+        else:
+            await bot.say(self.no_perm_msg)
+
+    @commands.command(pass_context=True)
+    async def announce(self, ctx, *, string : str):
+        """
+        Sends a message to all channels of a server.
+        """
+        banned_words = pingbot.config_load(False, 'banned_say_words')
+        if pingbot.is_bot_admin(ctx) == True:
+            if any(word in string for word in banned_words):
+                await self.bot.say(annoyed)
+            else:
+                for i in ctx.message.server.channels:
+                    try:
+                        await self.bot.send_message(i, string) #bot.say(string)
+                    except discord.errors.Forbidden:
+                        pass
+        else:
+            await bot.say(self.no_perm_msg)
+
 
     @commands.command(pass_context=True)
     async def change_game(self, ctx, *, game_name : str):
@@ -196,26 +259,6 @@ class Commands():
             await self.bot.say("PingBot has changed its avatar back to the original.")
 
     @commands.command(pass_context=True)
-    async def change_avatar_dl(self, ctx):
-        """
-        Changes avatar to the most recent downloaded avatar.
-        """
-        if self.allow_bot_changes == False:
-            if pingbot.is_bot_admin(ctx):
-                with open('./core/sys/cache/avatar_dl.png', 'rb') as avatar_file:
-                    avatar = avatar_file.read()
-                await self.bot.say(self.avatar_rf_change_success)
-                await self.bot.edit_profile(password=self.password, avatar=avatar)
-            else:
-                await self.bot.say(self.no_perm_msg)
-                return
-        else:
-            with open('./core/sys/cache/avatar_dl.png', 'rb') as avatar_file:
-                avatar = avatar_file.read()
-            await self.bot.say(self.avatar_rf_change_success)
-            await self.bot.edit_profile(password=self.password, avatar=avatar)
-
-    @commands.command(pass_context=True)
     async def change_orig(self, ctx):
         """
         Changes some of the bots information back to original.
@@ -252,6 +295,9 @@ class Commands():
 
     @commands.command(pass_context=True)
     async def rip(self, ctx, *, name : str=None):
+        """
+        Outputs text on a tombstone.
+        """
         if name == None:
             await self.bot.say("http://i.imgur.com/Ij5lWrM.png")
         else:
@@ -261,44 +307,57 @@ class Commands():
             image = pingbot.manipulate_text(rl_name, name_length, 58, 149, 'rip', 'comic.ttf')
             await self.bot.send_file(ctx.message.channel, image)
 
-    @commands.command()
-    async def notes(self, option : str, name : str=None, *, value : str=None):
+    @commands.group(pass_context=True)
+    async def notes(self, ctx, note_name : str):
         """Notes system."""
-        if option not in self.note_options:
+        if ctx.invoked_subcommand is None:
             config = configparser.SafeConfigParser()
             config.read('./core/docs/list/notes.ini')
-            if config.has_option('notes', option):
-                note = config.get('notes', option)
+            if config.has_option('notes', note_name):
+                note = config.get('notes', note_name)
                 await self.bot.say(note)
             else:
                 await self.bot.say("That note does not exist!")
+
+    @notes.command(name='add')
+    async def _notesadd(self, note_name : str, *, note_value : str):
+        """
+        Adds a note.
+        """
+        annoyed = pingbot.config_load_msg('annoyed')
+        if name not in self.note_options:
+            config = configparser.ConfigParser()
+            config.read("./core/docs/list/notes.ini")
+            config['notes'][name] = value
+            with open('./core/docs/list/notes.ini', 'w') as configfile:
+                config.write(configfile)
+            with open('./core/docs/list/notes.txt', 'a') as notes_file:
+                notes_file.write(name+",")
+            await self.bot.type()
+            await self.bot.say("Successfully created note!")
         else:
-            if name == None and value == None:
-                if option == "list":
-                    with open('./core/docs/list/notes.txt', 'r') as notes_file:
-                        notes = notes_file.read()
-                    await self.bot.say("Notes: `{}`".format(notes))
-            elif option == "add":
-                if name not in self.note_options:
-                    config = configparser.ConfigParser()
-                    config.read("./core/docs/list/notes.ini")
-                    config['notes'][name] = value
-                    with open('./core/docs/list/notes.ini', 'w') as configfile:
-                        config.write(configfile)
-                    with open('./core/docs/list/notes.txt', 'a') as notes_file:
-                        notes_file.write(name+",")
-                    await self.bot.type()
-                    await self.bot.say("Successfully created note!")
-                else:
-                    await self.bot.say(self.annoyed)
-            elif option == "edit":
-                config = configparser.SafeConfigParser()
-                config.read('./core/docs/list/notes.ini')
-                config['notes'][name] = value
-                with open('./core/docs/list/notes.ini', 'w') as configfile:
-                    config.write(configfile)
-                await self.bot.type()
-                await self.bot.say("Successfully edited note!")
+            await self.bot.say(annoyed)
+
+    @notes.command(name='list')
+    async def _noteslist(self):
+        """
+        Lists all notes.
+        """
+        with open('./core/docs/list/notes.txt', 'r') as notes_file:
+            notes = notes_file.read()
+        await self.bot.say("Notes: `{}`".format(notes))
+
+    @notes.command(name='edit')
+    async def _notesedit(self, note_name : str, *, note_value : str):
+        """
+        Edits a note.
+        """
+        config = configparser.SafeConfigParser()
+        config.read('./core/docs/list/notes.ini')
+        config['notes'][name] = value
+        with open('./core/docs/list/notes.ini', 'w') as configfile:
+                config.write(configfile)
+        await self.bot.say("Successfully edited note!")
 
     @commands.command()
     async def quotes(self, action : str=None, name : str=None, *, value : str=None):
@@ -311,7 +370,10 @@ class Commands():
             self.bot.say("Unknown.")
 
     @commands.command(pass_context=True)
-    async def welcome_edit(self, ctx, welcome_info : str):
+    async def welcome_edit(self, ctx, *, welcome_info : str):
+        """
+        Modifies the welcome message of a server.
+        """
         msg = ctx.message
         if self.enable_welcome_msg == True:
             if pingbot.is_owner(ctx) == True or pingbot.is_bot_admin(ctx) == True:
@@ -363,6 +425,113 @@ class Commands():
             await self.bot.say("{}, <@{}>".format(random.choice(holidays), user.id))
         else:
             await self.bot.say("<@{}>".format(user.id))
+
+    @commands.command()
+    async def command_add(self, command : str=None, *, value : str=None):
+        """
+        Adds a custom command.
+        """
+        cur_commands = pingbot.get_commands()
+        if command in cur_commands:
+            await self.bot.say("That command already exists!")
+            return
+        if self.enable_custom_commands == True:
+            if command != None and value != None:
+                pingbot.add_command(command, value)
+                await self.bot.say("Successfully added command!")
+            elif command == None:
+                await self.bot.say("You must provide the command name.")
+            elif value == None:
+                await self.bot.say("You must provide the value.")
+
+    @commands.command(pass_context=True)
+    async def role_test(self, ctx):
+        """
+        Role permission check-test.
+        """
+        permission = self.bot.permissions_for(ctx.message.author)
+        if permission.kick_members:
+            await self.bot.say("You have permission.")
+        else:
+            await self.bot.say("You don't have permission.")
+
+    @commands.command(pass_context=True)
+    async def kick(self, ctx, member : discord.Member):
+        """
+        Kicks a user. (You must be the server owner to use this command.)
+        """
+        try:
+            if ctx.message.channel.is_private:
+                await self.bot.say(self.no_command_pm)
+            else:
+                if pingbot.is_owner(ctx) == True:
+                    await self.bot.kick(member)
+                    await self.bot.say(self.kick_success)
+                else:
+                    await self.bot.say(self.no_kick_perm)
+        except discord.errors.Forbidden:
+            await self.bot.say(self.kick_forbidden)
+
+    @commands.command(pass_context=True)
+    async def ban(self, ctx, member : discord.Member):
+        """
+        Bans a user. (You must be the server owner to use this command.)
+        """
+        try:
+            if ctx.message.channel.is_private:
+                await self.bot.say(self.no_command_pm)
+            else:
+                if pingbot.is_owner(ctx) == True:
+                    await self.bot.ban(member, 0)
+                    await self.bot.say(self.ban_success)
+                else:
+                    await self.bot.say(self.no_ban_perm)
+        except discord.errors.Forbidden:
+            await self.bot.say(self.ban_forbidden)
+
+    @commands.command()
+    async def google(self, *, search_string : str):
+        """Searches Google."""
+        await self.bot.say(pingbot.search_standard('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&', search_string))
+
+    @commands.command()
+    async def youtube(self, *, search_string : str):
+        """Searches YouTube."""
+        await self.bot.say("*Searching for {}...*".format(search_string))
+        await self.bot.say(pingbot.search_youtube(search_string))
+
+    @commands.command()
+    async def urban(self, *, search_string : str):
+        """Searches Urban Dictionary."""
+        try:
+            pingbot.search_div_set_link('http://www.urbandictionary.com/define.php?term=', search_string)
+            await self.bot.say("Showing definition of `{}` from Urban Dictionary.".format(search_string))
+            meaning = pingbot.search_div_get('meaning')
+            example = pingbot.search_div_get('example')
+            contributor = pingbot.search_div_get('contributor')
+            await self.bot.say("{}\n\n**Example -**\n{}\nContributor-\n{}".format(meaning, example, contributor))
+        except AttributeError:
+            await self.bot.say("Could not find a definition for that word.")
+        except discord.errors.HTTPException:
+            await self.bot.say("The definition was too long...")
+
+    @commands.command()
+    async def wiki(self, *, search_string : str):
+        """Searches Wikipedia."""
+        try:
+            result = wikipedia.summary(search_string, sentences = 5)
+            await self.bot.say("**{}** {}".format(search_string, result))
+        except wikipedia.exceptions.DisambiguationError:
+            await self.bot.say("That page does not exist!")
+
+    @commands.command()
+    async def clever(self, *, input_string : str):
+        """Talks to cleverbot."""
+        try:
+            response = cb1.ask(input_string)
+            await self.bot.say(response)
+        except cleverbot.cleverbot.CleverbotAPIError:
+            await self.bot.say("Error! During attempted communication, something went wrong.")
 
     async def message_listener(self, msg):
         if msg.content == "F" or msg.content == "f":

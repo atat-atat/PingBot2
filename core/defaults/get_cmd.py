@@ -15,8 +15,23 @@ class GetInfo():
 		self.allow_bot_changes = pingbot.config_load(False, 'user_bot_changes')
 		self.no_perm_msg = pingbot.config_load_msg('no_perm_msg')
 		self.no_user_found = pingbot.config_load_msg('no_user_found')
+		self.no_command_pm = pingbot.config_load_msg('no_command_pm')
 		self.enable_osu = pingbot.config_load(False, 'enable_osu')
 		self.enable_wunderground = pingbot.config_load(False, 'enable_wunderground')
+
+		pingbot.init_command('join_date')
+		pingbot.init_command('game')
+		pingbot.init_command('userid')
+		pingbot.init_command('serverid')
+		pingbot.init_command('chanid')
+		pingbot.init_command('userinfo')
+		pingbot.init_command('serverinfo')
+		pingbot.init_command('osu_get')
+		pingbot.init_command('weather')
+		pingbot.init_command('get_logs')
+		pingbot.init_command('clean_logs')
+		pingbot.init_command('find')
+		pingbot.init_command('get_invite')
 
 	@commands.command(pass_context=True)
 	async def join_date(self, ctx, member : discord.Member=None):
@@ -24,7 +39,7 @@ class GetInfo():
 		Returns the join date of a user.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		if member != None:
 			await self.bot.say("User `{}` joined on `{}`!".format(member.name, member.joined_at))
@@ -37,7 +52,7 @@ class GetInfo():
 		Returns the currently playing game of a user.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		if member != None:
 			await self.bot.say("`{}` is currently playing `{}`".format(member.name, member.game))
@@ -50,7 +65,7 @@ class GetInfo():
 		Returns the ID of a user.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		if member != None:
 			await self.bot.say("The ID of `{}` is `{}`".format(member.name, member.id))
@@ -63,7 +78,7 @@ class GetInfo():
 		Returns the ID of the server.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		server = ctx.message.author.server
 		await self.bot.say("The ID of `{}` is `{}`".format(server.name, server.id))
@@ -74,7 +89,7 @@ class GetInfo():
 		Returns the ID of a channel.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		if channel != None:
 			await self.bot.say("The ID of `{}` is `{}`".format(channel.name, channel.id))
@@ -86,6 +101,9 @@ class GetInfo():
 		"""
 		Shows information about a user.
 		"""
+		if ctx.message.channel.is_private:
+			await self.bot.say(self.no_command_pm)
+			return
 		if user != None:
 			member = user
 		else:
@@ -111,7 +129,7 @@ Playing: {}
 		Returns the information of the server.
 		"""
 		if ctx.message.channel.is_private:
-			await self.bot.say("You cannot use this command in a PM.")
+			await self.bot.say(self.no_command_pm)
 			return
 		server = ctx.message.author.server
 		
@@ -138,6 +156,9 @@ Channels: {} (Voice: {})
 		"""
 		Gets the avatar of a user.
 		"""
+		if ctx.message.channel.is_private:
+			await self.bot.say(self.no_command_pm)
+			return
 		if member != None:
 			await self.bot.say("Avatar of `{}` is {}".format(member.name, member.avatar_url))
 		else:
@@ -182,7 +203,7 @@ Playcount: {}
 (SS: {} | S: {} | A: {})```
 http://a.ppy.sh/{}""".format(username, username, user_id, accuracy, level, playcount, country, pp_raw, pp_country_rank, count300, count100, count50, count_rank_ss, count_rank_s, count_rank_a, user_id))
 
-	@commands.command()
+	@commands.command(hidden=True)
 	async def osu_get_u(self, user : str, info : str):
 		if self.enable_osu == True:
 			osu_key = pingbot.config_load(False, 'osu_key')
@@ -191,7 +212,7 @@ http://a.ppy.sh/{}""".format(username, username, user_id, accuracy, level, playc
 			information = pingbot.osu_get_user(user, info)
 			await self.bot.say(information)
 
-	@commands.command()
+	@commands.command(hidden=True)
 	async def osu_get_b(self, info1 : str, info2 : str):
 		if self.enable_osu == True:
 			osu_key = pingbot.config_load(False, 'osu_key')
@@ -202,6 +223,9 @@ http://a.ppy.sh/{}""".format(username, username, user_id, accuracy, level, playc
 
 	@commands.command()
 	async def weather(self, zip_code : str):
+		"""
+		Returns weather information based on a zip code.
+		"""
 		if self.enable_wunderground == True:
 			wunderground_key = pingbot.config_load(False, 'wunderground_key')
 			pingbot.wunderground_set_key(wunderground_key)
@@ -219,6 +243,167 @@ http://a.ppy.sh/{}""".format(username, username, user_id, accuracy, level, playc
 			observation_time = pingbot.wunderground_weather_get(zip_code, 'observation_time')
 
 			await self.bot.say("```{}\nTemperature: {}\nDewpoint: {}\nFeelslike temperature: {}\nRelative humidity: {}\nWind direction: {}\nWind MPH: {}\nWind degrees: {}\n(Observation time: {})```\n{}".format(location, temperature_string, dewpoint_string, feelslike_string, relative_humidity, wind_string, wind_mph, wind_degrees, observation_time, icon_url))
+
+	#Logging commands- 
+	@commands.group(pass_context=True)
+	async def get_logs(self, ctx):
+		"""
+		Log management command.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say(self.no_perm_msg)
+			return
+		if ctx.invoked_subcommand is None:
+			await self.bot.say("You must specify the type.")
+
+	@get_logs.command(name='bot', pass_context=True)
+	async def _logbot(self, ctx, limit : int = 30):
+		"""
+		Get messages sent by the bot.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say(self.no_perm_msg)
+			return
+		counter = 0
+		async for message in self.bot.logs_from(ctx.message.channel, limit):
+			if message.author == self.bot.user:
+				output = "**[LOGS_FROM: {1.author.name}][{0}][{1.timestamp}][{1.server}][#{1.channel}]**: {1.content}".format(counter, message)
+				counter += 1
+				await self.bot.whisper(output)
+		await self.bot.say("PingBot has sent {} messages within the past {} messages.".format(counter, limit))
+
+	@get_logs.command(name='user', pass_context=True)
+	async def _loguser(self, ctx, user : discord.Member=None, limit : int = 30):
+		"""
+		Get messages sent by a user.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say(self.no_perm_msg)
+			return
+		if user == None:
+			await self.bot.say("You must specify the user.")
+			return
+		counter = 0
+		async for message in self.bot.logs_from(ctx.message.channel, limit):
+			if message.author == user:
+				output = "**[LOGS_FROM: {1.author.name}][{0}][{1.timestamp}][{1.server}][#{1.channel}]**: {1.content}".format(counter, message)
+				counter += 1
+				await self.bot.whisper(output)
+		await self.bot.say("{} has sent {} messages within the past {} messages.".format(user.name, counter, limit))
+
+	@get_logs.command(name='all', pass_context=True)
+	async def _logall(self, ctx, limit : int = 50):
+		"""
+		Returns a log of past messages.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say(self.no_perm_msg)
+			return
+		counter = 0
+		async for message in self.bot.logs_from(ctx.message.channel, limit):
+			output = "**[{0}][{1.timestamp}][{1.server}][#{1.channel}][{1.author.name}]**: {1.content}".format(counter, message)
+			counter += 1
+			await self.bot.whisper(output)
+
+	@commands.group(pass_context=True)
+	async def clean_logs(self, ctx):
+		"""
+		Chat log cleaner.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			if ctx.invoked_subcommand is None:
+				await self.bot.say("You must specify the type.")
+		else:
+			await self.bot.say("You do not have permission to use this command.")
+
+	@clean_logs.command(name='user', pass_context=True)
+	async def _cleanuser(self, ctx, user : discord.Member = None, limit : int = 30):
+		"""
+		Clean messages sent by a specific user.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say("You do not have permission to use this command.")
+			return
+		if user == None:
+			await self.bot.say("You must specify the user.")
+			return
+		async for message in self.bot.logs_from(ctx.message.channel, limit):
+			if message.author == user:
+				await self.bot.delete_message(message)
+
+	@clean_logs.command(name='all', pass_context=True)
+	async def _cleanall(self, ctx, limit : int = 1000):
+		"""
+		Clean all chat logs.
+		"""
+		if pingbot.is_bot_admin(ctx) or pingbot.is_owner(ctx):
+			pass
+		else:
+			await self.bot.say("You do not have permission to use this command.")
+			return
+		async for message in self.bot.logs_from(ctx.message.channel, limit):
+			await self.bot.delete_message(message)
+
+	@commands.group(pass_context=True)
+	async def find(self, ctx):
+		"""
+		Experimental information finder.
+		"""
+		if ctx.invoked_subcommand is None:
+			await self.bot.say("You must specify the type.")
+
+	@find.command(name='user', pass_context=True)
+	async def _finduser(self, ctx, *, user : str=None):
+		"""
+		Find a member that starts with a specific keyword.
+		"""
+		if user == None:
+			await self.bot.say("You must specify the user.")
+			return
+		found = 0
+		found_members = []
+		for member in ctx.message.server.members:
+			if user.lower() in member.name.lower() or user in "<@"+member.id+">" or user in member.discriminator or user.lower() == member.name.lower():
+				found += 1
+				await self.bot.say("`{}` (`#{}`) : `{}`".format(member.name, member.discriminator, member.id))
+		await self.bot.say("Found {} users with that name/ID.".format(found))
+
+	@find.command(name='channel', pass_context=True)
+	async def _findchan(self, ctx, *, chan : str=None):
+		"""
+		Find a channel that starts with a specific keyword.
+		"""
+		if chan == None:
+			await self.bot.say("You must specify the channel.")
+			return
+		found = 0
+		for channel in ctx.message.server.channels:
+			if chan.lower() in channel.name.lower() or chan in "<#"+channel.id+">" or chan == channel.name.lower():
+				found += 1
+				await self.bot.say("`#{}` : `{}`".format(channel, channel.id))
+		await self.bot.say("Found {} channels with that name/ID.".format(found))
+
+	@commands.command()
+	async def get_invite(self, server_name : str):
+		"""
+		Gets the invite link of a server that the bot is currently on.
+		"""
+		for server in self.bot.servers:
+			if server_name.lower() in server.name.lower():
+				invite = await self.bot.create_invite(server, max_age=0, max_uses=0, temporary=False, xkcd=False)
+				await self.bot.say(invite)
+				return
+		await self.bot.say("Server not found.")
 
 def setup(bot):
     bot.add_cog(GetInfo(bot))
