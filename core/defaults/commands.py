@@ -345,7 +345,7 @@ class Commands():
                 await self.bot.type()
                 await self.bot.say("Successfully created note!")
             else:
-                await self.bot.say(annoyed)
+                await self.bot.say(self.annoyed)
 
         elif option == 'edit':
             if note_name == None:
