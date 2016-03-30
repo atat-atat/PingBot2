@@ -64,6 +64,8 @@ class Commands():
         pingbot.init_command('wiki')
         pingbot.init_command('clever')
 
+        self.note_options=['list', 'add', 'edit']
+
     @commands.command(hidden=True)
     async def evaluate(self, *, eval_value : str=None):
         """
@@ -307,59 +309,64 @@ class Commands():
             image = pingbot.manipulate_text(rl_name, name_length, 58, 149, 'rip', 'comic.ttf')
             await self.bot.send_file(ctx.message.channel, image)
 
-    @commands.group(pass_context=True)
-    async def notes(self, ctx, note_name : str):
+    @commands.command(pass_context=True)
+    async def notes(self, ctx, option : str=None, note_name : str=None, *, value : str=None):
         """Notes system."""
-        if ctx.invoked_subcommand is None:
+        if option == None and note_name == None and value == None:
+            await self.bot.say("Unknown action.")
+            return
+
+        if option not in self.note_options and note_name == None and value == None:
             config = configparser.SafeConfigParser()
             config.read('./core/docs/list/notes.ini')
-            if config.has_option('notes', note_name):
-                note = config.get('notes', note_name)
+            if config.has_option('notes', option):
+                note = config.get('notes', option)
                 await self.bot.say(note)
             else:
                 await self.bot.say("That note does not exist!")
 
-    @notes.command(name='add')
-    async def _notesadd(self, note_name : str, *, note_value : str):
-        """
-        Adds a note.
-        """
-        annoyed = pingbot.config_load_msg('annoyed')
-        if name not in self.note_options:
-            config = configparser.ConfigParser()
-            config.read("./core/docs/list/notes.ini")
-            config['notes'][name] = value
+        elif option == 'add':
+            if note_name == None:
+                await self.bot.say("You must specify the note name.")
+                return
+
+            if value == None:
+                await self.bot.say("You must specify the note value.")
+                return
+
+            if note_name not in self.note_options:
+                config = configparser.ConfigParser()
+                config.read("./core/docs/list/notes.ini")
+                config['notes'][note_name] = value
+                with open('./core/docs/list/notes.ini', 'w') as configfile:
+                    config.write(configfile)
+                with open('./core/docs/list/notes.txt', 'a') as notes_file:
+                    notes_file.write(note_name+",")
+                await self.bot.type()
+                await self.bot.say("Successfully created note!")
+            else:
+                await self.bot.say(annoyed)
+
+        elif option == 'edit':
+            if note_name == None:
+                await self.bot.say("You must specify the note name.")
+                return
+
+            if value == None:
+                await self.bot.say("You must specify the note value.")
+            config = configparser.SafeConfigParser()
+            config.read('./core/docs/list/notes.ini')
+            config['notes'][note_name] = value
             with open('./core/docs/list/notes.ini', 'w') as configfile:
                 config.write(configfile)
-            with open('./core/docs/list/notes.txt', 'a') as notes_file:
-                notes_file.write(name+",")
-            await self.bot.type()
-            await self.bot.say("Successfully created note!")
-        else:
-            await self.bot.say(annoyed)
+            await self.bot.say("Successfully edited note!")
 
-    @notes.command(name='list')
-    async def _noteslist(self):
-        """
-        Lists all notes.
-        """
-        with open('./core/docs/list/notes.txt', 'r') as notes_file:
-            notes = notes_file.read()
-        await self.bot.say("Notes: `{}`".format(notes))
+        elif option == 'list':
+            with open('./core/docs/list/notes.txt', 'r') as notes_file:
+                notes = notes_file.read()
+            await self.bot.say("Notes: `{}`".format(notes))
 
-    @notes.command(name='edit')
-    async def _notesedit(self, note_name : str, *, note_value : str):
-        """
-        Edits a note.
-        """
-        config = configparser.SafeConfigParser()
-        config.read('./core/docs/list/notes.ini')
-        config['notes'][name] = value
-        with open('./core/docs/list/notes.ini', 'w') as configfile:
-                config.write(configfile)
-        await self.bot.say("Successfully edited note!")
-
-    @commands.command()
+    @commands.command(hidden=True)
     async def quotes(self, action : str=None, name : str=None, *, value : str=None):
         """
         Quotes system. (wip)
@@ -444,16 +451,37 @@ class Commands():
             elif value == None:
                 await self.bot.say("You must provide the value.")
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, hidden=True)
     async def role_test(self, ctx):
         """
         Role permission check-test.
         """
-        permission = self.bot.permissions_for(ctx.message.author)
-        if permission.kick_members:
-            await self.bot.say("You have permission.")
-        else:
-            await self.bot.say("You don't have permission.")
+        try:
+            if ctx.message.author.roles[1].permissions.kick_members or ctx.message.author.is_owner:
+                await self.bot.say("You can kick members.")
+            else:
+                await self.bot.say("You cannot kick members.")
+        except IndexError:
+            if ctx.message.author == ctx.message.server.owner:
+                await self.bot.say("You can kick members.")
+            else:
+                await self.bot.say("You cannot kick members.")
+        #for permission in ctx.message.author.permissions_for(self):
+            #if permission.kick_members == True:
+            #    await self.bot.say("You can kick members.")
+            #else:
+            #    await self.bot.say("You cannot kick members.")
+        #for role in ctx.message.author.roles:
+            #if role.kick_members:
+                #await self.bot.say("You can kick members.")
+            #else:
+                #await self.bot.say("You cannot kick members.")
+        #role1 = ctx.message.author.roles[0]
+        #role1_1 = str(role1)
+        #role1_final = role1_1.replace('@', '[@]')
+        #role2 = ctx.message.author.roles[1]
+        #await self.bot.say(role1_final)
+        #await self.bot.say(role2)
 
     @commands.command(pass_context=True)
     async def kick(self, ctx, member : discord.Member):
