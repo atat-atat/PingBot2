@@ -228,7 +228,7 @@ class Commands():
                     await self.bot.edit_profile(password=self.password, avatar=avatar)
                     await self.bot.say("PingBot has changed its avatar to `{}`".format(image_url))
                 except urllib.error.HTTPError:
-                    await self.bot.say("`403: Forbidden` error occurred.\n(For now, blame the jews.)")
+                    await self.bot.say("`403: Forbidden` error occurred.")
             else:
                 await self.bot.say(self.no_perm_msg)
         else:
@@ -239,7 +239,7 @@ class Commands():
                 await self.bot.edit_profile(password=self.password, avatar=avatar)
                 await self.bot.say("PingBot has changed its avatar to `{}`".format(image_url))
             except urllib.error.HTTPError:
-                await self.bot.say("`403: Forbidden` error occurred.\n(For now, blame the jews.)")
+                await self.bot.say("`403: Forbidden` error occurred.")
 
     @commands.command(pass_context=True)
     async def change_avatarorig(self, ctx):
